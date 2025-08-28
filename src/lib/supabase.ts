@@ -5,6 +5,7 @@
 import 'react-native-url-polyfill/auto';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { createClient } from '@supabase/supabase-js';
+import { Database } from '../types/database';
 
 // 環境変数から取得
 const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL;
@@ -17,7 +18,7 @@ if (!supabaseUrl || !supabaseAnonKey) {
 }
 
 // Supabaseクライアントを作成
-export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
   auth: {
     storage: AsyncStorage,
     autoRefreshToken: true,

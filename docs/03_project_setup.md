@@ -21,14 +21,14 @@ Expo + Supabaseプロジェクトの初期設定。開発環境の構築と基�
 - [x] Babel設定（babel.config.js）
 
 ### 環境変数
-- [ ] .env.local作成
-- [ ] .env.production作成
+- [x] .env.local作成
+- [x] .env.production作成
 - [x] .env.example作成（テンプレートのみ）
 
 ### Supabase設定
-- [ ] Supabaseプロジェクト作成
-- [ ] 環境変数設定
-- [ ] クライアント初期化（src/lib/supabase.ts）
+- [x] Supabaseプロジェクト作成
+- [x] 環境変数設定
+- [x] クライアント初期化（src/lib/supabase.ts）
 
 ### 依存関係インストール
 ```bash
@@ -116,10 +116,10 @@ npm start
 
 ## 完了条件
 - [x] 全設定ファイル作成完了
-- [ ] 環境変数設定完了
-- [ ] Supabaseプロジェクト作成
-- [ ] 開発サーバー起動確認
-- [ ] Expo Goでの動作確認
+- [x] 環境変数設定完了
+- [x] Supabaseプロジェクト作成
+- [x] 開発サーバー起動確認
+- [x] Expo Goでの動作確認
 
 ## トラブルシューティング
 
@@ -151,8 +151,8 @@ npm install
 - [<TICKET-ID>] で始める（例: [COMMON-003] add supabase client stub）
 
 動作確認（最低限）:
-- [ ] npm start が通る
-- [ ] Expo Goで起動（最低限の画面表示）
+- [x] npm start が通る
+- [x] Expo Goで起動（最低限の画面表示）
 
 実行手順（Claude）:
 ```bash
