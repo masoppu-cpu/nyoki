@@ -8,7 +8,7 @@
 
 ## 概要
 フロントエンド・バックエンドの並行開発を可能にするため、API仕様を最初に確定させる。
-MVPでは認証はSupabase Authを直接使用し、独自のAuthエンドポイントは作成しない（将来のAPI Gateway導入時に再検討）。
+本番実装では認証はSupabase Authを直接使用し、独自のAuthエンドポイントは作成しない（将来のAPI Gateway導入時に再検討）。
 
 ## TODO リスト
 
@@ -20,9 +20,9 @@ MVPでは認証はSupabase Authを直接使用し、独自のAuthエンドポイ
 
 ## API エンドポイント仕様
 
-### 認証関連（MVP方針）
+### 認証関連（本番実装方針）
 - 認証はSupabase Authをクライアントから直接呼び出す（`supabase.auth.*`）。
-- 独自の`/api/auth/*`エンドポイントはMVPでは提供しない。
+- 独自の`/api/auth/*`エンドポイントは初期リリースでは提供しない。
 - 将来的にGatewayを導入する場合のみ、`/api/auth/*`を設計する。
 
 ### 植物関連
@@ -49,7 +49,7 @@ POST   /api/rooms/generate        - 配置画像生成（Functions: generate-ar-
 GET    /api/rooms/history         - 分析履歴取得（Functions: room-history）
 ```
 
-### 購入検討リスト（非決済/MVP）
+### 購入検討リスト（非決済/初期リリース）
 ```typescript
 GET    /api/purchase-list                 - 購入検討リスト取得（status=considering）
 POST   /api/purchase-list/add             - 植物を購入検討リストに追加

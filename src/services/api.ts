@@ -2,7 +2,7 @@
  * APIクライアント実装
  * チケット: COMMON-001 API仕様書作成
  * 
- * MVPでは：
+ * 本番実装：
  * - 認証はSupabase Authを直接使用
  * - データ操作はSupabase自動生成API（supabase.from()）
  * - 複雑な処理はEdge Functions（supabase.functions.invoke()）
@@ -31,8 +31,8 @@ import {
 } from '../types/api';
 import { Plant, UserPlant, PurchaseListItem } from '../types';
 
-// Supabaseクライアントのインポート（実際の実装時に設定）
-// import { supabase } from '../lib/supabase';
+// Supabaseクライアントのインポート
+import { supabase } from '../lib/supabase';
 
 class ApiClient {
   /**
@@ -55,11 +55,8 @@ class ApiClient {
    * 認証トークンを取得
    */
   private async getAuthToken(): Promise<string | null> {
-    // const { data: { session } } = await supabase.auth.getSession();
-    // return session?.access_token || null;
-    
-    // モック実装
-    return 'mock-auth-token';
+    const { data: { session } } = await supabase.auth.getSession();
+    return session?.access_token || null;
   }
 
   // ==================== 植物関連 ====================
@@ -69,16 +66,26 @@ class ApiClient {
    */
   async getPlants(params?: PlantsListParams): Promise<ApiResponse<Plant[]>> {
     try {
-      // const { data, error } = await supabase
-      //   .from('plants')
-      //   .select('*')
-      //   .limit(params?.limit || 20)
-      //   .range(params?.offset || 0, (params?.offset || 0) + (params?.limit || 20) - 1);
+      const query = supabase
+        .from('plants')
+        .select('*');
       
-      // モック実装
+      if (params?.category) {
+        query.eq('category', params.category);
+      }
+      
+      const { data, error } = await query
+        .limit(params?.limit || 20)
+        .range(
+          params?.offset || 0, 
+          (params?.offset || 0) + (params?.limit || 20) - 1
+        );
+      
+      if (error) throw error;
+      
       return {
         success: true,
-        data: [],
+        data: data || [],
         message: '植物一覧を取得しました',
       };
     } catch (error) {
