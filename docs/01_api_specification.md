@@ -8,21 +8,21 @@
 
 ## 概要
 フロントエンド・バックエンドの並行開発を可能にするため、API仕様を最初に確定させる。
-MVPでは認証はSupabase Authを直接使用し、独自のAuthエンドポイントは作成しない（将来のAPI Gateway導入時に再検討）。
+本番実装では認証はSupabase Authを直接使用し、独自のAuthエンドポイントは作成しない（将来のAPI Gateway導入時に再検討）。
 
 ## TODO リスト
 
 - [x] プロジェクト構造の確認
-- [ ] エンドポイント一覧作成（Supabase Functions実体に準拠）
-- [ ] リクエスト/レスポンス形式定義
-- [ ] エラーレスポンス仕様
-- [ ] 認証ヘッダー仕様
+- [x] エンドポイント一覧作成（Supabase Functions実体に準拠）
+- [x] リクエスト/レスポンス形式定義
+- [x] エラーレスポンス仕様
+- [x] 認証ヘッダー仕様
 
 ## API エンドポイント仕様
 
-### 認証関連（MVP方針）
+### 認証関連（本番実装方針）
 - 認証はSupabase Authをクライアントから直接呼び出す（`supabase.auth.*`）。
-- 独自の`/api/auth/*`エンドポイントはMVPでは提供しない。
+- 独自の`/api/auth/*`エンドポイントは初期リリースでは提供しない。
 - 将来的にGatewayを導入する場合のみ、`/api/auth/*`を設計する。
 
 ### 植物関連
@@ -50,10 +50,12 @@ POST   /api/rooms/generate        - 配置画像生成（Functions: generate-ar-
 GET    /api/rooms/history         - 分析履歴取得（Functions: room-history）
 ```
 
-**必要な設定**:
-- Gemini APIキー（GEMINI_API_KEY）→ [設定手順はHUMAN_TODO.md参照]
+### 購入検討リスト（非決済/初期リリース）
+補足（必要なら差し込みOK）:
+- 必要な設定の誘導を残す場合はリンク先を更新して使ってください。
+    - Gemini APIキー（GEMINI_API_KEY）→ docs/human_tasks/01_external_services.md
+    - Supabase/Edge FunctionsのSecrets → docs/10_be_supabase_setup.md
 
-### 購入検討リスト（非決済/MVP）
 ```typescript
 GET    /api/purchase-list                 - 購入検討リスト取得（status=considering）
 POST   /api/purchase-list/add             - 植物を購入検討リストに追加
@@ -101,10 +103,10 @@ POST   /api/subscription/cancel    - サブスクキャンセル
 - ANON KEY をAuthorizationヘッダーに入れないこと（セキュリティとRLSの整合のため）。
 
 ## 完了条件
-- [ ] API仕様書のレビュー完了
-- [ ] フロントエンド開発者の承認
-- [ ] バックエンド開発者の承認
-- [ ] モックデータ構造の確定
+- [x] API仕様書のレビュー完了
+- [x] フロントエンド開発者の承認
+- [x] バックエンド開発者の承認
+- [x] モックデータ構造の確定
 
 ## 備考
 - Supabaseの自動生成API（`supabase.from()`）とEdge Functions（`supabase.functions.invoke()`）を活用
