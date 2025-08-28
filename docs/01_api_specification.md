@@ -46,10 +46,16 @@ POST   /api/user/plants/:id/water - 水やり記録
 ```typescript
 POST   /api/rooms/analyze         - 部屋画像分析（Functions: analyze-room）
 POST   /api/rooms/generate        - 配置画像生成（Functions: generate-ar-image）
+                                    ※ Gemini 2.5 Flash Image使用
 GET    /api/rooms/history         - 分析履歴取得（Functions: room-history）
 ```
 
 ### 購入検討リスト（非決済/初期リリース）
+補足（必要なら差し込みOK）:
+- 必要な設定の誘導を残す場合はリンク先を更新して使ってください。
+    - Gemini APIキー（GEMINI_API_KEY）→ docs/human_tasks/01_external_services.md
+    - Supabase/Edge FunctionsのSecrets → docs/10_be_supabase_setup.md
+
 ```typescript
 GET    /api/purchase-list                 - 購入検討リスト取得（status=considering）
 POST   /api/purchase-list/add             - 植物を購入検討リストに追加

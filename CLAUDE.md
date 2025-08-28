@@ -25,11 +25,11 @@
 - **ターゲット**: 20-30代の植物初心者、都市部在住者
 - **リリース目標**: 2025年9月7日（本番リリース）
 
-### コア機能
-1. **部屋撮影→AI分析→植物提案**
-2. **Before/After表示で配置確認**
-3. **植物管理（水やりリマインダー）**
-4. **ショップ機能（EC連携）**
+### コア機能（iOS先行・9/7向け）
+1. 部屋撮影→AI分析→植物提案（合成は2Dプレビュー）
+2. Before/After表示で配置確認
+3. 購入検討リスト（外部リンク購入、購入済み反映）
+4. 植物管理（水やりリマインダー最小）
 
 ## 💻 技術スタック
 
@@ -40,9 +40,9 @@
 - State: React Context API
 - Navigation: Custom Tab Navigation
 
-### Phase 2で追加
-- Payment: RevenueCat SDK
-- Push: OneSignal
+### 本番向け追加（キー提供後）
+- Payment: RevenueCat SDK（iOS先行）
+- Push: OneSignal（iOS先行）
 - Analytics: Mixpanel
 
 ## 🔐 Supabase Auth 実装ガイド
@@ -131,7 +131,7 @@ useEffect(() => {
 }, [])
 ```
 
-### 環境変数設定
+### 環境変数設定（秘密はコミット禁止）
 ```bash
 # .env
 EXPO_PUBLIC_SUPABASE_URL=your_supabase_url

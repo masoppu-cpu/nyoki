@@ -11,6 +11,8 @@ OneSignal SDKを統合し、プッシュ通知機能を実装。水やりリマ�
 
 注: OneSignalはExpo Goでは動作しません。カスタムDev Client（`expo-dev-client`）での実行が必須です。
 
+現状: 本番App ID（iOS）が未提供のため、設定セクションはプレースホルダで待機。最低限の権限要求/ハンドラは先行して実装し、App ID提供後に有効化。
+
 ## TODO リスト
 
 - [ ] OneSignalアカウント設定

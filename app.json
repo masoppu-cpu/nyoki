@@ -5,7 +5,7 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
-    "userInterfaceStyle": "light",
+    "userInterfaceStyle": "automatic",
     "splash": {
       "image": "./assets/splash.png",
       "resizeMode": "contain",
@@ -17,9 +17,13 @@
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "com.nyoki.app",
+      "buildNumber": "1",
       "infoPlist": {
-        "NSCameraUsageDescription": "This app uses the camera to capture photos of your room for plant placement visualization.",
-        "NSPhotoLibraryUsageDescription": "This app needs access to your photo library to select room photos."
+        "NSCameraUsageDescription": "お部屋を撮影して、最適な植物をご提案します",
+        "NSPhotoLibraryUsageDescription": "お部屋の写真を選択して、最適な植物をご提案します"
+      },
+      "config": {
+        "usesNonExemptEncryption": false
       }
     },
     "android": {
@@ -29,9 +33,10 @@
       },
       "package": "com.nyoki.app",
       "permissions": [
-        "CAMERA",
-        "READ_EXTERNAL_STORAGE",
-        "WRITE_EXTERNAL_STORAGE"
+        "android.permission.CAMERA",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE",
+        "android.permission.RECORD_AUDIO"
       ]
     },
     "web": {
@@ -41,18 +46,19 @@
       [
         "expo-image-picker",
         {
-          "photosPermission": "The app accesses your photos to let you share them with your friends."
+          "photosPermission": "お部屋の写真を選択して、最適な植物をご提案します"
         }
       ]
     ],
-    "extra": {
-      "eas": {
-        "projectId": "your-project-id"
-      }
-    },
     "scheme": "nyoki",
     "updates": {
       "fallbackToCacheTimeout": 0
-    }
+    },
+    "extra": {
+      "eas": {
+        "projectId": "2e8d3a3c-5c1e-4d07-b255-9040b9ce4f18"
+      }
+    },
+    "owner": "ainakagawa"
   }
 }

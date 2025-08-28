@@ -11,6 +11,8 @@ RevenueCat SDKを統合し、サブスクリプション課金機能を実装。
 
 注: RevenueCatはExpo Goでは動作しません。カスタムDev Client（`expo-dev-client`）での実行が必須です。
 
+現状: 本番キー（iOS）が未提供のため、設定セクションはプレースホルダのまま進める。キーが提供され次第、Offering/ProductID/Priceを最終反映。
+
 ## TODO リスト
 
 - [ ] RevenueCatアカウント作成

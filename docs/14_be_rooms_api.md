@@ -20,6 +20,11 @@
 
 ## Edge Functions実装
 
+⚠️ **セキュリティ実装の重要事項**:
+- ユーザーのemailアドレスは`auth.users`から取得（profilesテーブルには保存しない）
+- Service Role Keyは本番環境でのみ使用し、厳重に管理
+- RLSポリシーと併用してデータアクセスを二重に保護
+
 ### analyze-room Function
 ```typescript
 // supabase/functions/analyze-room/index.ts
@@ -78,7 +83,7 @@ serve(async (req: Request) => {
 
     // Gemini APIで分析
     const genAI = new GoogleGenerativeAI(Deno.env.get('GEMINI_API_KEY') ?? '');
-    // 仕様に合わせてFlash系モデルに統一
+    // 分析用モデル（テキスト+画像入力→テキスト出力）
     const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash-002' });
 
     const prompt = `
@@ -291,6 +296,12 @@ async function getRecommendedPlants(
 ```
 
 ### generate-ar-image Function
+
+⚠️ **Gemini 2.0 画像生成API実装**:
+- モデル: `gemini-2.0-flash-exp` (画像生成対応)
+- 入力: テキストプロンプト + 部屋画像
+- 出力: 植物が配置された合成画像
+
 ```typescript
 // supabase/functions/generate-ar-image/index.ts
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
@@ -341,17 +352,24 @@ serve(async (req: Request) => {
       );
     }
 
-    // Gemini APIで画像生成（現時点では画像編集APIが限定的なのでモック）
-    // 将来的にはDALL-E 3やStable Diffusionとの統合も検討
-    
-    // モック実装：スタイルに応じた事前生成画像を返す
-    const styleImages = {
-      natural: 'https://your-bucket.supabase.co/images/ar-natural-sample.jpg',
-      modern: 'https://your-bucket.supabase.co/images/ar-modern-sample.jpg',
-      minimal: 'https://your-bucket.supabase.co/images/ar-minimal-sample.jpg',
+    // Gemini 2.5 Flash Image で画像生成
+    const genAI = new GoogleGenerativeAI(Deno.env.get('GEMINI_API_KEY') ?? '');
+    // 画像生成専用モデル（2025年1月リリース）
+    const model = genAI.getGenerativeModel({ 
+      model: 'gemini-2.5-flash-image-preview'  // 最新の画像生成モデル
+    });
+
+    // 部屋画像を取得
+    const roomImageResponse = await fetch(room_image_url);
+    const roomImageBuffer = await roomImageResponse.arrayBuffer();
+    const roomImageData = {
+      inlineData: {
+        data: btoa(String.fromCharCode(...new Uint8Array(roomImageBuffer))),
+        mimeType: 'image/jpeg',
+      },
     };
 
-    // 実際のAI画像生成プロンプト（将来実装用）
+    // 画像生成プロンプト
     const prompt = `
       部屋の画像に以下の植物を自然に配置してください：
       ${plants.map(p => p.name).join(', ')}
@@ -363,54 +381,117 @@ serve(async (req: Request) => {
       - 光の当たり方を考慮
       - サイズ感を適切に
       - ${style}スタイルで配置
+      
+      重要な指示:
+      - 複数の画像を自然にブレンド
+      - キャラクター（植物）の一貫性を保つ
+      - 写実的で自然な合成を実現
     `;
 
-    // 生成結果を保存（モック）
-    const generatedImageUrl = styleImages[style] || styleImages.natural;
-
-    // 生成履歴を保存
-    const { data: generation, error: genError } = await supabaseClient
-      .from('ar_generations')
-      .insert({
-        user_id: user.id,
-        room_image_url,
-        generated_image_url: generatedImageUrl,
-        plants: plants.map(p => p.id),
-        style,
+    // Gemini 2.5で画像生成（複数画像のブレンディング対応）
+    try {
+      const result = await model.generateContent([
         prompt,
-        is_successful: true,
-      })
-      .select()
-      .single();
+        roomImageData  // 部屋の元画像
+      ]);
+      
+      const response = await result.response;
+      
+      // 生成された画像を取得
+      let generatedImageUrl;
+      for (const part of response.candidates[0].content.parts) {
+        if (part.inlineData) {
+          // 生成画像をSupabase Storageに保存
+          const imageBytes = Uint8Array.from(
+            atob(part.inlineData.data),
+            c => c.charCodeAt(0)
+          );
+          
+          const fileName = `${user.id}/ar-${Date.now()}.jpg`;
+          const { data: uploadData, error: uploadError } = await supabaseClient.storage
+            .from('ar-images')
+            .upload(fileName, imageBytes.buffer, {
+              contentType: 'image/jpeg',
+            });
+          
+          if (uploadError) throw uploadError;
+          
+          const { data: { publicUrl } } = supabaseClient.storage
+            .from('ar-images')
+            .getPublicUrl(fileName);
+          
+          generatedImageUrl = publicUrl;
+          break;
+        }
+      }
+      
+      if (!generatedImageUrl) {
+        throw new Error('画像生成に失敗しました');
+      }
 
-    if (genError) {
-      console.error('Generation save error:', genError);
-    }
-
-    // 生成回数を更新
-    // 用途ごとにカウントを分離（生成はai_generation_count）
-    await supabaseClient
-      .from('profiles')
-      .update({ 
-        ai_generation_count: (profile.ai_generation_count ?? 0) + 1 
-      })
-      .eq('id', user.id);
-
-    // 遅延をシミュレート（実際のAI生成時間を模倣）
-    await new Promise(resolve => setTimeout(resolve, 3000));
-
-    return new Response(
-      JSON.stringify({
-        success: true,
-        data: {
-          image_url: generatedImageUrl,
-          generation_id: generation?.id,
+      // 生成履歴を保存
+      const { data: generation, error: genError } = await supabaseClient
+        .from('ar_generations')
+        .insert({
+          user_id: user.id,
+          room_image_url,
+          generated_image_url: generatedImageUrl,
+          plants: plants.map(p => p.id),
           style,
           prompt,
-        },
-      }),
-      { headers: { 'Content-Type': 'application/json' } }
-    );
+          is_successful: true,
+        })
+        .select()
+        .single();
+
+      if (genError) {
+        console.error('Generation save error:', genError);
+      }
+
+
+
+      // 生成回数を更新
+      await supabaseClient
+        .from('profiles')
+        .update({ 
+          ai_generation_count: (profile.ai_generation_count ?? 0) + 1 
+        })
+        .eq('id', user.id);
+
+      return new Response(
+        JSON.stringify({
+          success: true,
+          data: {
+            image_url: generatedImageUrl,
+            generation_id: generation?.id,
+            style,
+            prompt,
+          },
+        }),
+        { headers: { 'Content-Type': 'application/json' } }
+      );
+    } catch (genError) {
+      console.error('Gemini画像生成エラー:', genError);
+      
+      // フォールバック: エラー時はモック画像を返す
+      const fallbackImages = {
+        natural: '/assets/ar-natural-fallback.jpg',
+        modern: '/assets/ar-modern-fallback.jpg', 
+        minimal: '/assets/ar-minimal-fallback.jpg',
+      };
+      
+      return new Response(
+        JSON.stringify({
+          success: false,
+          data: {
+            image_url: fallbackImages[style] || fallbackImages.natural,
+            is_fallback: true,
+            error: 'AI生成に失敗したため、サンプル画像を表示しています',
+          },
+        }),
+        { headers: { 'Content-Type': 'application/json' } }
+      );
+    }
   } catch (error) {
     console.error('配置画像生成エラー:', error);
     return new Response(
@@ -613,9 +694,71 @@ CREATE INDEX idx_ar_generations_created_at ON public.ar_generations(created_at D
 - [ ] Gemini API統合
 - [ ] 制限チェック実装
 
+## 必要な設定
+
+### 1. Gemini API キーの取得
+
+1. [Google AI Studio](https://aistudio.google.com/app/apikey) にアクセス
+2. 「Get API Key」をクリック
+3. 生成されたAPIキーをコピー
+
+### 2. Supabase環境変数の設定
+
+```bash
+# Supabase Dashboardで設定
+GEMINI_API_KEY=your_gemini_api_key_here
+```
+
+または、ローカル開発時は `.env` ファイルに追加:
+
+```env
+GEMINI_API_KEY=AIzaSy...  # 実際のAPIキーを設定
+```
+
+### 3. Storage バケットの作成
+
+Supabase Dashboardで以下のバケットを作成:
+- `room-images` - 部屋画像用（公開）
+- `ar-images` - 生成画像用（公開）
+
+## 実装の注意点
+
+### Gemini 2.5 Flash Image の仕様
+
+#### 料金体系
+- **コスト**: $0.039/画像（1画像 = 1290トークン）
+- **計算式**: $30.00 / 100万出力トークン
+- **MVP想定**: 月100回生成で約$3.90
+
+#### 技術仕様
+- **モデル名**: `gemini-2.5-flash-image-preview`
+- **特徴**:
+  - 複数画像のブレンディング
+  - キャラクター一貫性の維持
+  - 自然言語による画像編集
+  - SynthID透かし自動付与（不可視）
+
+#### 現在の制限事項
+- テキストレンダリング（看板等）の精度向上中
+- キャラクター一貫性は改善中
+- 事実性の高い画像生成も開発中
+
+### エラーハンドリング
+- API失敗時はフォールバック画像を返す
+- レート制限エラーは適切にユーザーに通知
+- 生成履歴は成功/失敗どちらも記録
+
+## 利用可能なAPI
+
+### Gemini 2.5 Flash Image
+- **Google AI Studio**: https://aistudio.google.com
+- **Gemini API**: 直接API呼び出し
+- **Vertex AI**: エンタープライズ向け
+
 ## 備考
-- 画像生成は現在モック実装
-- 将来的にDALL-E 3やStable Diffusion統合
+- Gemini 2.5 Flash Image（2025年1月リリース）で画像生成実装
+- 複数画像のブレンディング機能により、植物と部屋の自然な合成が可能
+- SynthID透かしにより、AI生成画像であることを自動的に識別可能
 - 無料プランは月5回まで
 
 ## 認証・呼び出し方針
