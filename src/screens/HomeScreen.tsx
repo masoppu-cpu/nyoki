@@ -87,8 +87,8 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ onNavigate }) => {
         </View>
         
         <View style={styles.benefitItem}>
-          <Ionicons name="cart" size={20} color={COLORS.primary} />
-          <Text style={styles.benefitText}>気に入った植物はそのまま購入</Text>
+          <Ionicons name="bookmark" size={20} color={COLORS.primary} />
+          <Text style={styles.benefitText}>検討リストに追加して外部リンクで購入</Text>
         </View>
       </View>
 

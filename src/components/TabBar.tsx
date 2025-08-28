@@ -2,23 +2,23 @@ import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { COLORS, FONT_SIZE, SPACING } from '../config/constants';
-import { AppView, CartItem } from '../types';
+import { AppView, PurchaseListItem } from '../types';
 
 interface TabBarProps {
   selectedTab: number;
   onTabPress: (index: number, view: AppView) => void;
-  cartItems: CartItem[];
+  purchaseListItems: PurchaseListItem[];
 }
 
-const TabBar: React.FC<TabBarProps> = ({ selectedTab, onTabPress, cartItems }) => {
+const TabBar: React.FC<TabBarProps> = ({ selectedTab, onTabPress, purchaseListItems }) => {
   const tabs = [
     { icon: 'home', label: 'ホーム', view: 'home' as AppView },
     { icon: 'leaf', label: 'My Plants', view: 'my-plants' as AppView },
     { icon: 'basket', label: 'Shop', view: 'shop' as AppView },
-    { icon: 'cart', label: 'カート', view: 'cart' as AppView },
+    { icon: 'bookmark', label: '検討リスト', view: 'purchase-list' as AppView },
   ];
 
-  const cartItemCount = cartItems.reduce((acc, item) => acc + item.quantity, 0);
+  const consideringCount = (purchaseListItems || []).filter(i => i.status === 'considering').length;
 
   return (
     <View style={styles.tabBar}>
@@ -34,9 +34,9 @@ const TabBar: React.FC<TabBarProps> = ({ selectedTab, onTabPress, cartItems }) =
               size={24}
               color={selectedTab === index ? COLORS.primary : COLORS.inactive}
             />
-            {tab.view === 'cart' && cartItemCount > 0 && (
+            {tab.view === 'purchase-list' && consideringCount > 0 && (
               <View style={styles.cartBadge}>
-                <Text style={styles.cartBadgeText}>{cartItemCount}</Text>
+                <Text style={styles.cartBadgeText}>{consideringCount}</Text>
               </View>
             )}
           </View>

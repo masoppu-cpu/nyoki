@@ -6,10 +6,10 @@ import { Plant } from '../types';
 interface PlantCardProps {
   plant: Plant;
   onPress: () => void;
-  onAddToCart?: () => void;
+  onAddToPurchaseList?: () => void;
 }
 
-const PlantCard: React.FC<PlantCardProps> = ({ plant, onPress, onAddToCart }) => {
+const PlantCard: React.FC<PlantCardProps> = ({ plant, onPress, onAddToPurchaseList }) => {
   return (
     <TouchableOpacity style={styles.card} onPress={onPress}>
       <Image source={plant.image} style={styles.image} resizeMode="cover" />
@@ -23,9 +23,9 @@ const PlantCard: React.FC<PlantCardProps> = ({ plant, onPress, onAddToCart }) =>
         <Text style={styles.water}>水やり: {plant.water}</Text>
         <View style={styles.footer}>
           <Text style={styles.price}>¥{plant.price.toLocaleString()}</Text>
-          {onAddToCart && (
-            <TouchableOpacity style={styles.cartButton} onPress={onAddToCart}>
-              <Text style={styles.cartButtonText}>カートに追加</Text>
+          {onAddToPurchaseList && (
+            <TouchableOpacity style={styles.cartButton} onPress={onAddToPurchaseList}>
+              <Text style={styles.cartButtonText}>検討リストへ</Text>
             </TouchableOpacity>
           )}
         </View>

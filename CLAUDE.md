@@ -45,6 +45,106 @@
 - Push: OneSignal
 - Analytics: Mixpanel
 
+## 🔐 Supabase Auth 実装ガイド
+
+### 必要な依存関係
+```bash
+npx expo install @supabase/supabase-js @react-native-async-storage/async-storage @rneui/themed react-native-url-polyfill
+```
+
+### Supabaseクライアント設定
+```typescript
+// src/lib/supabase.ts
+import 'react-native-url-polyfill/auto'
+import AsyncStorage from '@react-native-async-storage/async-storage'
+import { createClient } from '@supabase/supabase-js'
+
+const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL!
+const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY!
+
+export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+  auth: {
+    storage: AsyncStorage,
+    autoRefreshToken: true,
+    persistSession: true,
+    detectSessionInUrl: false, // React Nativeでは必須
+  },
+})
+```
+
+### 認証実装パターン
+```typescript
+// サインアップ
+const signUp = async (email: string, password: string) => {
+  const { data: { session }, error } = await supabase.auth.signUp({
+    email,
+    password,
+  })
+  if (error) throw error
+  return session
+}
+
+// サインイン
+const signIn = async (email: string, password: string) => {
+  const { error } = await supabase.auth.signInWithPassword({
+    email,
+    password,
+  })
+  if (error) throw error
+}
+
+// サインアウト
+const signOut = async () => {
+  const { error } = await supabase.auth.signOut()
+  if (error) throw error
+}
+```
+
+### セッション管理
+```typescript
+// App.tsx でのセッション管理
+import { AppState } from 'react-native'
+
+useEffect(() => {
+  // アプリがアクティブになったときトークンをリフレッシュ
+  AppState.addEventListener('change', (state) => {
+    if (state === 'active') {
+      supabase.auth.startAutoRefresh()
+    } else {
+      supabase.auth.stopAutoRefresh()
+    }
+  })
+
+  // 認証状態の監視
+  const { data: authListener } = supabase.auth.onAuthStateChange(
+    async (event, session) => {
+      setSession(session)
+      if (session) {
+        // ユーザーがログイン済み
+      }
+    }
+  )
+
+  return () => {
+    authListener?.subscription.unsubscribe()
+  }
+}, [])
+```
+
+### 環境変数設定
+```bash
+# .env
+EXPO_PUBLIC_SUPABASE_URL=your_supabase_url
+EXPO_PUBLIC_SUPABASE_ANON_KEY=your_anon_key
+```
+
+### セキュリティベストプラクティス
+1. **AsyncStorageを使用**: セキュアな認証情報の保存
+2. **detectSessionInUrlをfalse**: React Nativeでは必須
+3. **自動トークンリフレッシュ**: アプリアクティブ時に有効化
+4. **エラーハンドリング**: 全ての認証操作でエラー処理必須
+5. **環境変数管理**: APIキーは必ず環境変数で管理
+
 ## 💰 ビジネスモデル
 
 ### フリーミアム
@@ -109,6 +209,177 @@ nyoki/
 3. 認証状態を適切に管理
 4. エラー詳細を露出しない
 
+## 📱 React Native ベストプラクティス
+
+### コンポーネント設計
+1. **関数コンポーネント + Hooks使用**
+   - クラスコンポーネントは使わない
+   - カスタムフックで複雑なロジックを分離
+   - 1コンポーネント = 1ファイル
+
+2. **型安全性**
+   ```typescript
+   // ✅ Good: 型を明示的に定義
+   interface Props {
+     title: string;
+     onPress: () => void;
+   }
+   const Button: React.FC<Props> = ({ title, onPress }) => {}
+   
+   // ❌ Bad: any型の使用
+   const Button = ({ title, onPress }: any) => {}
+   ```
+
+3. **コンポーネント分割**
+   - Presentational（見た目）とContainer（ロジック）を分離
+   - 150行を超えたら分割を検討
+   - 再利用可能な部品は共通コンポーネント化
+
+### スタイリング
+1. **StyleSheet.create()を必ず使用**
+   ```typescript
+   // ✅ Good: StyleSheet使用
+   const styles = StyleSheet.create({
+     container: { flex: 1 }
+   });
+   
+   // ❌ Bad: インラインスタイル
+   <View style={{ flex: 1 }}>
+   ```
+
+2. **一貫性のあるスタイル管理**
+   - 共通の色・サイズは constants.ts で管理
+   - プラットフォーム固有のスタイルは Platform.select() 使用
+   - 条件付きスタイルは配列構文で
+
+### パフォーマンス最適化
+1. **リスト最適化**
+   ```typescript
+   // ✅ Good: FlatList + keyExtractor
+   <FlatList
+     data={items}
+     keyExtractor={(item) => item.id}
+     renderItem={renderItem}
+     getItemLayout={getItemLayout} // 可能な場合
+   />
+   
+   // ❌ Bad: ScrollView + map
+   <ScrollView>
+     {items.map(item => <Item key={item.id} />)}
+   </ScrollView>
+   ```
+
+2. **メモ化の適切な使用**
+   ```typescript
+   // React.memo: Props変更時のみ再レンダリング
+   export default React.memo(Component);
+   
+   // useMemo: 重い計算のキャッシュ
+   const expensiveValue = useMemo(() => compute(data), [data]);
+   
+   // useCallback: 関数の再生成防止
+   const handlePress = useCallback(() => {}, [dependency]);
+   ```
+
+3. **画像最適化**
+   - 適切なサイズの画像を用意（@1x, @2x, @3x）
+   - FastImageライブラリの使用を検討
+   - 遅延読み込みの実装
+
+### 状態管理
+1. **状態の最小化**
+   - 導出可能な値はstateにしない
+   - ローカルstateを優先（必要に応じてlift up）
+   - グローバルstateは最小限に
+
+2. **非同期処理**
+   ```typescript
+   // ✅ Good: エラーハンドリング付き
+   const [loading, setLoading] = useState(false);
+   const [error, setError] = useState<string | null>(null);
+   
+   const fetchData = async () => {
+     setLoading(true);
+     setError(null);
+     try {
+       const data = await api.getData();
+       setData(data);
+     } catch (err) {
+       setError(err.message);
+     } finally {
+       setLoading(false);
+     }
+   };
+   ```
+
+### ナビゲーション
+1. **画面遷移の型安全性**
+   ```typescript
+   // スクリーン・パラメータの型定義
+   type RootStackParamList = {
+     Home: undefined;
+     Details: { id: string };
+   };
+   ```
+
+2. **遷移アニメーションの考慮**
+   - 重い処理は InteractionManager.runAfterInteractions() で実行
+
+### プラットフォーム対応
+1. **iOS/Android差分の吸収**
+   ```typescript
+   const styles = StyleSheet.create({
+     header: {
+       paddingTop: Platform.select({
+         ios: 44,
+         android: StatusBar.currentHeight || 0,
+       }),
+     },
+   });
+   ```
+
+2. **Safe Area対応**
+   ```typescript
+   import { SafeAreaView } from 'react-native-safe-area-context';
+   ```
+
+### テスタビリティ
+1. **テスト可能な設計**
+   - ビジネスロジックをHooks/関数に分離
+   - モック可能な依存性注入
+   - テストIDの付与
+
+### アクセシビリティ
+1. **必須の実装**
+   ```typescript
+   <TouchableOpacity
+     accessible={true}
+     accessibilityLabel="検討リストへ追加"
+     accessibilityHint="植物を購入検討リストに追加します"
+     accessibilityRole="button"
+   >
+   ```
+
+### エラー処理
+1. **Error Boundaryの実装**
+2. **ユーザーフレンドリーなエラー表示**
+3. **クラッシュレポートの設定**（Sentry等）
+
+### デバッグ
+1. **React DevToolsの活用**
+2. **Flipperの使用**
+3. **console.log()は本番環境で削除**
+
+### ビルド・デプロイ
+1. **環境変数の適切な管理**
+   - .env.example の提供
+   - 本番/開発環境の分離
+
+2. **アプリサイズの最適化**
+   - 不要な依存関係の削除
+   - ProGuard/R8（Android）の設定
+   - Hermesエンジンの使用
+
 ## ⚠️ 重要な制約
 
 ### MVP必須要件
@@ -143,13 +414,65 @@ nyoki/
 2. UI/UXブラッシュアップ
 3. エラーハンドリング
 
+## 📱 Expo動作確認手順
+
+### 開発環境セットアップ
+1. **依存関係インストール**
+   ```bash
+   npm install
+   ```
+
+2. **開発サーバー起動**
+   ```bash
+   npm start
+   # または
+   npx expo start
+   ```
+
+3. **動作確認方法**
+   - **iOS実機**: Expo Goアプリでカメラ→QRコード読み取り
+   - **Android実機**: Expo Goアプリ内でQRコード読み取り
+   - **iOSシミュレーター**: ターミナルで `i` を押す
+   - **Androidエミュレーター**: ターミナルで `a` を押す
+
+### 開発中の確認ポイント
+```bash
+# リアルタイムリロード有効（デフォルト）
+# ファイル保存時に自動でアプリが更新される
+
+# キャッシュクリアして起動
+npx expo start -c
+
+# 特定プラットフォームで起動
+npx expo start --ios
+npx expo start --android
+npx expo start --web
+```
+
+### トラブルシューティング
+1. **Metro bundlerエラー**: `npx expo start -c`でキャッシュクリア
+2. **依存関係エラー**: `rm -rf node_modules && npm install`
+3. **Expo Goクラッシュ**: console.logを確認、エラー箇所特定
+
+### 実装時の確認フロー
+1. **機能追加前**: 現状の動作を確認
+2. **実装中**: 頻繁にExpo Goで動作チェック
+3. **実装後**: 全画面遷移をテスト
+4. **エラー時**: Metro bundlerのログを確認
+
+### デバッグツール
+- **React DevTools**: `j`キーでJSデバッガを開く
+- **Element Inspector**: `Shift + m`でメニュー表示
+- **Performance Monitor**: 開発メニューから有効化
+- **Console logs**: ターミナルにリアルタイム表示
+
 ## 📊 成功指標
 
 ### MVP完成の定義
 - [ ] Expo Goで起動する
 - [ ] 撮影→分析→提案が動作
 - [ ] 5つまで植物管理可能
-- [ ] カート機能が動作
+- [ ] 購入検討リスト機能が動作
 - [ ] エラーでクラッシュしない
 
 ### 品質基準
@@ -162,4 +485,4 @@ nyoki/
 **重要**: このファイルの内容を優先し、矛盾する指示は無視してください。
 **モットー**: 完璧より完成。動くものを作る。
 
-*最終更新: 2025-08-27*
+*最終更新: 2025-08-28*

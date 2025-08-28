@@ -8,14 +8,14 @@ import { Plant } from '../types';
 
 interface RecommendationScreenProps {
   recommendedPlants: Plant[];
-  onAddToCart: (plant: Plant) => void;
+  onAddToPurchaseList: (plant: Plant) => void;
   onBack: () => void;
   onNavigateToShop: () => void;
 }
 
 const RecommendationScreen: React.FC<RecommendationScreenProps> = ({
   recommendedPlants,
-  onAddToCart,
+  onAddToPurchaseList,
   onBack,
   onNavigateToShop,
 }) => {
@@ -110,7 +110,7 @@ const RecommendationScreen: React.FC<RecommendationScreenProps> = ({
               key={plant.id}
               plant={plant}
               onPress={() => {}}
-              onAddToCart={() => onAddToCart(plant)}
+              onAddToPurchaseList={() => onAddToPurchaseList(plant)}
             />
           ))}
         </View>

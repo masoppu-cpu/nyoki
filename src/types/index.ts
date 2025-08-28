@@ -5,7 +5,7 @@ export type AppView =
   | 'recommendations' 
   | 'my-plants' 
   | 'shop' 
-  | 'cart';
+  | 'purchase-list';
 
 export type PlantCategory = 
   | 'natural' 
@@ -37,14 +37,12 @@ export interface Plant {
   stock?: number;
 }
 
-export interface CartItem {
-  id: string;
-  type: 'plant' | 'tool';
-  name: string;
-  price: number;
-  quantity: number;
-  image?: any;
-  plantId?: string;
+export interface PurchaseListItem {
+  plant: Plant;
+  status: 'considering' | 'purchased';
+  externalUrl?: string;
+  addedAt?: string;
+  purchasedAt?: string;
 }
 
 export interface Tool {
