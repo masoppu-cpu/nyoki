@@ -171,6 +171,29 @@ EXPO_PUBLIC_API_URL=http://localhost:3000
 
 ## Expo Goでの動作確認手順
 
+
+## Auto-PR（Claude用）
+
+目的:
+- モックAPI層の骨格を最小差分で追加/補強し、PRを作成
+
+ブランチ:
+- feat/<TICKET-ID>-mock-api
+
+コミット規約:
+- [<TICKET-ID>] で始める
+
+動作確認（最低限）:
+- [ ] モックレスポンスがUIに反映
+- [ ] 環境変数でモック切替が機能
+
+実行手順（Claude）:
+```bash
+git switch -c feat/<TICKET-ID>-mock-api
+git add -A && git commit -m "[<TICKET-ID}] implement mock api skeleton"
+git push -u origin feat/<TICKET-ID>-mock-api
+gh pr create --fill --base main --head feat/<TICKET-ID>-mock-api
+```
 ```bash
 # 1. 開発サーバー起動
 npm start

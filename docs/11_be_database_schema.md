@@ -440,3 +440,26 @@ VALUES
 - `supabase/seed.sql` - 初期データ
 
 最終更新: 2025-08-28
+
+## Auto-PR（Claude用）
+
+目的:
+- DBスキーマ（本ファイルのDDL）をマイグレーションとして追加しPRを作成
+
+ブランチ:
+- feat/<TICKET-ID>-db-schema
+
+コミット規約:
+- [<TICKET-ID>] で始める
+
+動作確認（最低限）:
+- [ ] マイグレーション適用成功
+- [ ] 参照整合性/RLS確認
+
+実行手順（Claude）:
+```bash
+git switch -c feat/<TICKET-ID>-db-schema
+git add -A && git commit -m "[<TICKET-ID}] add db migrations"
+git push -u origin feat/<TICKET-ID>-db-schema
+gh pr create --fill --base main --head feat/<TICKET-ID>-db-schema
+```

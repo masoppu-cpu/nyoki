@@ -178,6 +178,29 @@ nyokiは、AIがあなたの部屋を分析して、
 • 部屋に合う植物を知りたい
 • 植物を枯らしてしまった経験がある
 • インテリアとして植物を楽しみたい
+
+## Auto-PR（Claude用）
+
+目的:
+- 本番設定（env/セキュリティ/最適化/申請準備）の最小構成をPR化
+
+ブランチ:
+- feat/<TICKET-ID>-production-config
+
+コミット規約:
+- [<TICKET-ID>] で始める
+
+動作確認（最低限）:
+- [ ] 本番envで起動
+- [ ] 機密キーがクライアントに露出しない
+
+実行手順（Claude）:
+```bash
+git switch -c feat/<TICKET-ID>-production-config
+git add -A && git commit -m "[<TICKET-ID}] add production config"
+git push -u origin feat/<TICKET-ID>-production-config
+gh pr create --fill --base main --head feat/<TICKET-ID>-production-config
+```
 ```
 
 ### スクリーンショット要件

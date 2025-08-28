@@ -311,3 +311,26 @@ A: TestFlightアプリのインストールを確認
 - `docs/testflight-guide.md` - テスターガイド
 
 最終更新: 2025-08-28
+
+## Auto-PR（Claude用）
+
+目的:
+- TestFlightデプロイの最小手順/設定を追加しPR作成
+
+ブランチ:
+- feat/<TICKET-ID>-testflight
+
+コミット規約:
+- [<TICKET-ID>] で始める
+
+動作確認（最低限）:
+- [ ] TestFlight配信が成功
+- [ ] 招待ユーザーでインストール確認
+
+実行手順（Claude）:
+```bash
+git switch -c feat/<TICKET-ID>-testflight
+git add -A && git commit -m "[<TICKET-ID}] add testflight steps"
+git push -u origin feat/<TICKET-ID>-testflight
+gh pr create --fill --base main --head feat/<TICKET-ID>-testflight
+```

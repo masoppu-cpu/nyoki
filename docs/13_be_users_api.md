@@ -609,3 +609,26 @@ DELETE レスポンス (/user-plants/:id):
 - `supabase/functions/upload-avatar/` - アバターアップロード
 
 最終更新: 2025-08-28
+
+## Auto-PR（Claude用）
+
+目的:
+- ユーザーAPI（プロフィール取得/更新等）の最小実装を追加しPR作成
+
+ブランチ:
+- feat/<TICKET-ID>-users-api
+
+コミット規約:
+- [<TICKET-ID>] で始める
+
+動作確認（最低限）:
+- [ ] 認証済みユーザーのみアクセス
+- [ ] RLSポリシーと整合
+
+実行手順（Claude）:
+```bash
+git switch -c feat/<TICKET-ID>-users-api
+git add -A && git commit -m "[<TICKET-ID}] add users api"
+git push -u origin feat/<TICKET-ID>-users-api
+gh pr create --fill --base main --head feat/<TICKET-ID>-users-api
+```

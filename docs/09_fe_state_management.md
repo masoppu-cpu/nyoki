@@ -422,3 +422,26 @@ npm start
 - `src/hooks/usePlants.ts` - 植物管理フック（✅基本実装済み）
 
 最終更新: 2025-08-28
+
+## Auto-PR（Claude用）
+
+目的:
+- 購入検討リスト中心の状態管理（Context/Hook）の最小実装を追加しPR作成
+
+ブランチ:
+- feat/<TICKET-ID>-state-management
+
+コミット規約:
+- [<TICKET-ID>] で始める
+
+動作確認（最低限）:
+- [ ] 追加/削除/購入済み反映
+- [ ] 永続化（AsyncStorage）
+
+実行手順（Claude）:
+```bash
+git switch -c feat/<TICKET-ID>-state-management
+git add -A && git commit -m "[<TICKET-ID}] add purchase list context"
+git push -u origin feat/<TICKET-ID>-state-management
+gh pr create --fill --base main --head feat/<TICKET-ID>-state-management
+```

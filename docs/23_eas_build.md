@@ -317,3 +317,26 @@ eas build:view <build-id> --json
 - `.easignore` - EASビルド除外設定（必要に応じて）
 
 最終更新: 2025-08-28
+
+## Auto-PR（Claude用）
+
+目的:
+- EAS Buildの最小設定（Dev Client含む）を追加しPR作成
+
+ブランチ:
+- feat/<TICKET-ID>-eas-build
+
+コミット規約:
+- [<TICKET-ID>] で始める
+
+動作確認（最低限）:
+- [ ] eas build -p ios が通る
+- [ ] Dev Clientで動作
+
+実行手順（Claude）:
+```bash
+git switch -c feat/<TICKET-ID>-eas-build
+git add -A && git commit -m "[<TICKET-ID}] add eas build config"
+git push -u origin feat/<TICKET-ID>-eas-build
+gh pr create --fill --base main --head feat/<TICKET-ID>-eas-build
+```

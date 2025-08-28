@@ -475,3 +475,25 @@ const CameraResultScreen = ({ route, navigation }) => {
 - `src/screens/CameraResultScreen.tsx` - 結果画面
 
 最終更新: 2025-08-28
+
+## Auto-PR（Claude用）
+
+目的:
+- 画像処理パイプライン（最小統合フロー）を実装しPR作成
+
+ブランチ:
+- feat/<TICKET-ID>-image-pipeline
+
+コミット規約:
+- [<TICKET-ID>] で始める
+
+動作確認（最低限）:
+- [ ] 検証→最適化→アップロード→分析→推奨→配置生成（モック）が一通り動く
+
+実行手順（Claude）:
+```bash
+git switch -c feat/<TICKET-ID>-image-pipeline
+git add -A && git commit -m "[<TICKET-ID}] add image pipeline integration"
+git push -u origin feat/<TICKET-ID>-image-pipeline
+gh pr create --fill --base main --head feat/<TICKET-ID>-image-pipeline
+```

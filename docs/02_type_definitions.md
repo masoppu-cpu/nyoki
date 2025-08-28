@@ -146,3 +146,30 @@ export interface Database {
 - `src/types/database.ts` - DB型定義（要作成）
 
 最終更新: 2025-08-28
+
+## Auto-PR（Claude用）
+
+目的:
+- このチケットの内容（型定義）を最小差分で追加/更新し、PRを作成してください
+
+ブランチ:
+- feat/<TICKET-ID>-<short-desc>（例: feat/COMMON-002-types）
+  - <TICKET-ID> は「タスクID」の値を使用
+
+コミット規約:
+- [<TICKET-ID>] から始める（例: [COMMON-002] add ApiResponse types）
+
+PR:
+- テンプレに従い、目的/テスト（tsc通過）を記載
+
+動作確認（最低限）:
+- [ ] tsc –noEmit が成功
+- [ ] 参照ファイルのimportが解決
+
+実行手順（Claude例）:
+```bash
+git switch -c feat/<TICKET-ID>-<short-desc>
+git add -A && git commit -m "[<TICKET-ID>] <要約>"
+git push -u origin feat/<TICKET-ID>-<short-desc>
+gh pr create --fill --base main --head feat/<TICKET-ID>-<short-desc>
+```

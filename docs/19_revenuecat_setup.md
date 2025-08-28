@@ -321,3 +321,25 @@ Offerings:
 - `src/screens/SubscriptionScreen.tsx` - サブスク画面（要作成）
 
 最終更新: 2025-08-28
+
+## Auto-PR（Claude用）
+
+目的:
+- RevenueCat統合の最小実装（Dev Client前提）を追加しPR作成
+
+ブランチ:
+- feat/<TICKET-ID>-revenuecat
+
+コミット規約:
+- [<TICKET-ID>] で始める
+
+動作確認（最低限）:
+- [ ] Offerings取得/購買/復元が通る（サンドボックス）
+
+実行手順（Claude）:
+```bash
+git switch -c feat/<TICKET-ID>-revenuecat
+git add -A && git commit -m "[<TICKET-ID}] integrate revenuecat"
+git push -u origin feat/<TICKET-ID>-revenuecat
+gh pr create --fill --base main --head feat/<TICKET-ID>-revenuecat
+```

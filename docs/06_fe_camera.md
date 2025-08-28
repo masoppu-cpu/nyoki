@@ -270,3 +270,26 @@ npm start
 - `src/components/ImagePreview.tsx` - プレビュー（要作成）
 
 最終更新: 2025-08-28
+
+## Auto-PR（Claude用）
+
+目的:
+- カメラ画面の最小実装（権限/撮影/プレビュー）を追加しPR作成
+
+ブランチ:
+- feat/<TICKET-ID>-camera
+
+コミット規約:
+- [<TICKET-ID>] で始める
+
+動作確認（最低限）:
+- [ ] 権限ダイアログ/撮影が機能
+- [ ] プレビュー表示
+
+実行手順（Claude）:
+```bash
+git switch -c feat/<TICKET-ID>-camera
+git add -A && git commit -m "[<TICKET-ID}] add camera basic flow"
+git push -u origin feat/<TICKET-ID>-camera
+gh pr create --fill --base main --head feat/<TICKET-ID>-camera
+```

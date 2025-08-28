@@ -524,3 +524,26 @@ const styles = StyleSheet.create({
 - `src/screens/NotificationSettingsScreen.tsx` - 通知設定画面
 
 最終更新: 2025-08-28
+
+## Auto-PR（Claude用）
+
+目的:
+- OneSignal統合（Dev Client前提）の最小実装を追加しPR作成
+
+ブランチ:
+- feat/<TICKET-ID>-onesignal
+
+コミット規約:
+- [<TICKET-ID>] で始める
+
+動作確認（最低限）:
+- [ ] 権限リクエスト/トークン取得
+- [ ] フォアグラウンド/開封ハンドラ
+
+実行手順（Claude）:
+```bash
+git switch -c feat/<TICKET-ID>-onesignal
+git add -A && git commit -m "[<TICKET-ID}] integrate onesignal"
+git push -u origin feat/<TICKET-ID>-onesignal
+gh pr create --fill --base main --head feat/<TICKET-ID>-onesignal
+```

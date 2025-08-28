@@ -475,3 +475,26 @@ supabase secrets set SUPABASE_ANON_KEY=eyJxxxxx...
 - `supabase/functions/get-recommended-plants/` - 推奨API
 
 最終更新: 2025-08-28
+
+## Auto-PR（Claude用）
+
+目的:
+- 植物API（一覧/詳細/検索）のEdge Functionsを最小実装しPRを作成
+
+ブランチ:
+- feat/<TICKET-ID>-plants-api
+
+コミット規約:
+- [<TICKET-ID>] で始める
+
+動作確認（最低限）:
+- [ ] /functions/v1/get-plants が動作
+- [ ] /functions/v1/search-plants が動作
+
+実行手順（Claude）:
+```bash
+git switch -c feat/<TICKET-ID>-plants-api
+git add -A && git commit -m "[<TICKET-ID}] add plants api functions"
+git push -u origin feat/<TICKET-ID>-plants-api
+gh pr create --fill --base main --head feat/<TICKET-ID>-plants-api
+```

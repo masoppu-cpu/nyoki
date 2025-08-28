@@ -414,3 +414,26 @@ export const validatePassword = (password: string): string | null => {
 - `src/screens/auth/SignUpScreen.tsx` - サインアップ画面（要作成）
 
 最終更新: 2025-08-28
+
+## Auto-PR（Claude用）
+
+目的:
+- 認証（Supabase Auth）統合の最小実装を追加しPR作成
+
+ブランチ:
+- feat/<TICKET-ID>-auth
+
+コミット規約:
+- [<TICKET-ID>] で始める
+
+動作確認（最低限）:
+- [ ] サインアップ/サインイン/サインアウト
+- [ ] セッション永続化
+
+実行手順（Claude）:
+```bash
+git switch -c feat/<TICKET-ID>-auth
+git add -A && git commit -m "[<TICKET-ID}] integrate supabase auth"
+git push -u origin feat/<TICKET-ID>-auth
+gh pr create --fill --base main --head feat/<TICKET-ID>-auth
+```

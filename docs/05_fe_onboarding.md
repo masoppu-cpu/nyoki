@@ -306,3 +306,26 @@ npm start
 - `assets/images/onboarding-*.png` - オンボーディング画像（要作成）
 
 最終更新: 2025-08-28
+
+## Auto-PR（Claude用）
+
+目的:
+- オンボーディング画面の最小実装を追加しPR作成
+
+ブランチ:
+- feat/<TICKET-ID>-onboarding
+
+コミット規約:
+- [<TICKET-ID>] で始める
+
+動作確認（最低限）:
+- [ ] 5枚スライドが動作
+- [ ] 初回起動判定が機能
+
+実行手順（Claude）:
+```bash
+git switch -c feat/<TICKET-ID>-onboarding
+git add -A && git commit -m "[<TICKET-ID}] add onboarding slides"
+git push -u origin feat/<TICKET-ID>-onboarding
+gh pr create --fill --base main --head feat/<TICKET-ID>-onboarding
+```

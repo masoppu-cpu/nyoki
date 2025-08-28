@@ -112,6 +112,40 @@ POST   /api/subscription/cancel    - サブスクキャンセル
 - `/api/rooms/generate` → Functions `generate-ar-image`
 - `/api/rooms/history` → Functions `room-history`
 
+## Auto-PR（Claude用）
+
+目的:
+- このチケットの内容を最小差分で実装し、PRを作成してください
+
+ブランチ:
+- feat/<TICKET-ID>-<short-desc>
+  例: feat/COMMON-001-api-spec
+  - <TICKET-ID> は本ファイル冒頭の「タスクID」の値を使用
+
+コミット規約:
+- 1コミット=1意図、メッセージは [<TICKET-ID>] から始める
+  例: [COMMON-001] define rooms endpoints
+
+PR:
+- タイトル: [<TICKET-ID>] <短い要約>
+- 本文: .github/pull_request_template.md に準拠（目的/テスト/スクショ）
+- リベース禁止。必要なら「Update branch」を案内
+
+動作確認（最低限）:
+- [ ] 仕様の差分が反映されている
+- [ ] 参照リンクが整合
+- [ ] エラー/警告なし
+
+実行手順（Claudeが行うコマンド例）:
+```bash
+git switch -c feat/<TICKET-ID>-<short-desc>
+git add -A && git commit -m "[<TICKET-ID>] <要約>"
+git push -u origin feat/<TICKET-ID>-<short-desc>
+# GitHub CLI があれば
+gh pr create --fill --base main --head feat/<TICKET-ID>-<short-desc>
+# 無ければGitHub UIでPR作成
+```
+
 ## 関連ファイル
 - `src/types/api.ts` - API型定義
 - `src/services/api.ts` - APIクライアント実装

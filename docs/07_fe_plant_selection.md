@@ -382,3 +382,26 @@ npm start
 - `src/components/FilterBar.tsx` - フィルターバー（要作成）
 
 最終更新: 2025-08-28
+
+## Auto-PR（Claude用）
+
+目的:
+- 植物選択画面（購入検討リスト対応）の最小実装を追加しPR作成
+
+ブランチ:
+- feat/<TICKET-ID>-plant-selection
+
+コミット規約:
+- [<TICKET-ID>] で始める
+
+動作確認（最低限）:
+- [ ] 推奨順に並ぶ
+- [ ] 検討リストに追加できる
+
+実行手順（Claude）:
+```bash
+git switch -c feat/<TICKET-ID>-plant-selection
+git add -A && git commit -m "[<TICKET-ID}] implement plant selection"
+git push -u origin feat/<TICKET-ID>-plant-selection
+gh pr create --fill --base main --head feat/<TICKET-ID>-plant-selection
+```

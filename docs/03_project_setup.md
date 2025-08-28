@@ -139,6 +139,29 @@ npm install
 - React Native 0.74.1
 - TypeScript厳密モード有効
 
+## Auto-PR（Claude用）
+
+目的:
+- 初期設定の不足分（env, supabase client など）を最小差分で追加しPRを作成
+
+ブランチ:
+- feat/<TICKET-ID>-<short-desc>（例: feat/COMMON-003-setup-env）
+
+コミット規約:
+- [<TICKET-ID>] で始める（例: [COMMON-003] add supabase client stub）
+
+動作確認（最低限）:
+- [ ] npm start が通る
+- [ ] Expo Goで起動（最低限の画面表示）
+
+実行手順（Claude）:
+```bash
+git switch -c feat/<TICKET-ID>-<short-desc>
+git add -A && git commit -m "[<TICKET-ID>] <要約>"
+git push -u origin feat/<TICKET-ID>-<short-desc>
+gh pr create --fill --base main --head feat/<TICKET-ID>-<short-desc>
+```
+
 ## 関連ファイル
 - `package.json` - パッケージ設定（✅作成済み）
 - `tsconfig.json` - TypeScript設定（✅作成済み）

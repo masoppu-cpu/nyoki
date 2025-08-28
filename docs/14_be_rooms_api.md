@@ -628,3 +628,26 @@ CREATE INDEX idx_ar_generations_created_at ON public.ar_generations(created_at D
 - `supabase/functions/room-history/` - 履歴API
 
 最終更新: 2025-08-28
+
+## Auto-PR（Claude用）
+
+目的:
+- 部屋分析/配置生成/履歴のFunctionsをモックで最小実装しPR作成
+
+ブランチ:
+- feat/<TICKET-ID>-rooms-api
+
+コミット規約:
+- [<TICKET-ID>] で始める
+
+動作確認（最低限）:
+- [ ] analyze-room が動作
+- [ ] generate-ar-image がモックで動作
+
+実行手順（Claude）:
+```bash
+git switch -c feat/<TICKET-ID>-rooms-api
+git add -A && git commit -m "[<TICKET-ID}] add rooms api functions"
+git push -u origin feat/<TICKET-ID>-rooms-api
+gh pr create --fill --base main --head feat/<TICKET-ID>-rooms-api
+```

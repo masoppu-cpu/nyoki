@@ -505,3 +505,26 @@ npm start
 - `src/services/ai.ts` - AI サービス（✅基本実装済み、要拡張）
 
 最終更新: 2025-08-28
+
+## Auto-PR（Claude用）
+
+目的:
+- 配置プレビュー画面（2D合成）の最小実装を追加しPR作成
+
+ブランチ:
+- feat/<TICKET-ID>-placement-preview
+
+コミット規約:
+- [<TICKET-ID>] で始める
+
+動作確認（最低限）:
+- [ ] Before/Afterスライダーが動作
+- [ ] 画像生成モックが機能
+
+実行手順（Claude）:
+```bash
+git switch -c feat/<TICKET-ID>-placement-preview
+git add -A && git commit -m "[<TICKET-ID}] add placement preview"
+git push -u origin feat/<TICKET-ID>-placement-preview
+gh pr create --fill --base main --head feat/<TICKET-ID>-placement-preview
+```

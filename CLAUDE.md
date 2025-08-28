@@ -486,3 +486,18 @@ npx expo start --web
 **モットー**: 完璧より完成。動くものを作る。
 
 *最終更新: 2025-08-28*
+## 🧭 開発フロー（ClaudeがPRまで行う）
+
+1) チケットのmd（docs配下）を読み、差分を最小にして実装
+2) ブランチ作成→小さくコミット→プッシュ→PR作成（GitHub CLIがあれば`gh pr create --fill`）
+3) PR本文は`.github/pull_request_template.md`準拠（目的/テスト/スクショ）
+4) リベースは行わず、必要なら「Update branch」を案内
+
+ブランチ命名: `feat/<TICKET-ID>-<short-desc>` 例: `feat/FE-004-plant-selection`
+コミット: `[<TICKET-ID>] 変更内容` 例: `[FE-004] implement plant selection purchase list`
+1PR=1チケット。大きい変更は分割して順にPR。
+
+### MCP接続がある場合（任意）
+- Supabaseのスキーマ確認や軽いクエリはMCP経由を優先（`.mcp.json`で`--project-ref`と`SUPABASE_ACCESS_TOKEN`を設定）。
+- アプリ実装は従来通り：`@supabase/supabase-js` と `supabase.functions.invoke` を使用し、MCPに依存しない。
+- シークレットは直書きしない（プレースホルダ/環境変数を使用）。

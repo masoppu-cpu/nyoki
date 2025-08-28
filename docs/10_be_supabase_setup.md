@@ -248,3 +248,33 @@ serve(async (req) => {
 - `.env.local` - 環境変数
 
 最終更新: 2025-08-28
+
+## MCPを使った確認（任意）
+
+- 目的: ClaudeがSupabaseへ安全に接続し、スキーマやRLS、簡単なSELECTを確認するための補助です。
+- 必須ではありません。設定済みならClaudeが自動活用し、未設定ならスキップします。
+- 設定方法: プロジェクト直下の`.mcp.json`にSupabase MCPサーバを追加（`--project-ref <ref>` と `SUPABASE_ACCESS_TOKEN`）。
+- 実装注意: アプリコードはMCPに依存せず、`@supabase/supabase-js`とEdge Functionsを使用します。
+
+## Auto-PR（Claude用）
+
+目的:
+- Supabase初期設定（SQL/Storage/RLS/Functionsスケルトン）を最小構成で追加しPRを作成
+
+ブランチ:
+- feat/<TICKET-ID>-supabase-setup
+
+コミット規約:
+- [<TICKET-ID>] で始める
+
+動作確認（最低限）:
+- [ ] マイグレーション適用成功
+- [ ] RLSで意図通りアクセス制御
+
+実行手順（Claude）:
+```bash
+git switch -c feat/<TICKET-ID>-supabase-setup
+git add -A && git commit -m "[<TICKET-ID}] add supabase setup"
+git push -u origin feat/<TICKET-ID>-supabase-setup
+gh pr create --fill --base main --head feat/<TICKET-ID>-supabase-setup
+```

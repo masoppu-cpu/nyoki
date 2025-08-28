@@ -614,3 +614,26 @@ export const useSubscriptionLimit = () => {
 - `src/hooks/useSubscriptionLimit.ts` - 制限チェック
 
 最終更新: 2025-08-28
+
+## Auto-PR（Claude用）
+
+目的:
+- サブスク管理（状態/制限/アップグレードUI）の最小実装を追加しPR作成
+
+ブランチ:
+- feat/<TICKET-ID>-subscription
+
+コミット規約:
+- [<TICKET-ID>] で始める
+
+動作確認（最低限）:
+- [ ] ステータス取得/制限チェック
+- [ ] アップグレード/復元の反映
+
+実行手順（Claude）:
+```bash
+git switch -c feat/<TICKET-ID>-subscription
+git add -A && git commit -m "[<TICKET-ID}] add subscription manager"
+git push -u origin feat/<TICKET-ID>-subscription
+gh pr create --fill --base main --head feat/<TICKET-ID>-subscription
+```

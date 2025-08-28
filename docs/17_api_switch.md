@@ -465,3 +465,26 @@ export const apiCache = new ApiCache();
 - `.env.*` - 環境変数ファイル（要作成）
 
 最終更新: 2025-08-28
+
+## Auto-PR（Claude用）
+
+目的:
+- モック→実API切り替えの土台（apiClient）を最小実装しPR作成
+
+ブランチ:
+- feat/<TICKET-ID>-api-switch
+
+コミット規約:
+- [<TICKET-ID>] で始める
+
+動作確認（最低限）:
+- [ ] supabase.functions.invoke でユーザーJWTが付く
+- [ ] 環境変数でモック/実API切替
+
+実行手順（Claude）:
+```bash
+git switch -c feat/<TICKET-ID>-api-switch
+git add -A && git commit -m "[<TICKET-ID}] implement api client switch"
+git push -u origin feat/<TICKET-ID>-api-switch
+gh pr create --fill --base main --head feat/<TICKET-ID>-api-switch
+```

@@ -477,3 +477,26 @@ SELECT cron.schedule(
 - `supabase/migrations/notifications.sql` - DBスキーマ
 
 最終更新: 2025-08-28
+
+## Auto-PR（Claude用）
+
+目的:
+- プッシュ通知（スケジュール/キャンセル/既読動線）の最小実装を追加しPR作成
+
+ブランチ:
+- feat/<TICKET-ID>-push
+
+コミット規約:
+- [<TICKET-ID>] で始める
+
+動作確認（最低限）:
+- [ ] OneSignal送信→アプリ受信
+- [ ] 既存`scheduled_notifications`運用と整合
+
+実行手順（Claude）:
+```bash
+git switch -c feat/<TICKET-ID>-push
+git add -A && git commit -m "[<TICKET-ID}] add push notification flow"
+git push -u origin feat/<TICKET-ID>-push
+gh pr create --fill --base main --head feat/<TICKET-ID>-push
+```

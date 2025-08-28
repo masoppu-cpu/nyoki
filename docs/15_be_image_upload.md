@@ -526,3 +526,26 @@ FormData:
 - `src/utils/imageUpload.ts` - フロントエンドヘルパー
 
 最終更新: 2025-08-28
+
+## Auto-PR（Claude用）
+
+目的:
+- 画像アップロード（Storage/RLS/署名URL）の最小実装を追加しPR作成
+
+ブランチ:
+- feat/<TICKET-ID>-image-upload
+
+コミット規約:
+- [<TICKET-ID>] で始める
+
+動作確認（最低限）:
+- [ ] 10MB制限/拡張子チェック
+- [ ] 署名URLで非公開画像にアクセス可能
+
+実行手順（Claude）:
+```bash
+git switch -c feat/<TICKET-ID>-image-upload
+git add -A && git commit -m "[<TICKET-ID}] add image upload function"
+git push -u origin feat/<TICKET-ID>-image-upload
+gh pr create --fill --base main --head feat/<TICKET-ID>-image-upload
+```
