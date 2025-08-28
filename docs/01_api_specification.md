@@ -13,10 +13,10 @@ MVPでは認証はSupabase Authを直接使用し、独自のAuthエンドポイ
 ## TODO リスト
 
 - [x] プロジェクト構造の確認
-- [ ] エンドポイント一覧作成（Supabase Functions実体に準拠）
-- [ ] リクエスト/レスポンス形式定義
-- [ ] エラーレスポンス仕様
-- [ ] 認証ヘッダー仕様
+- [x] エンドポイント一覧作成（Supabase Functions実体に準拠）
+- [x] リクエスト/レスポンス形式定義
+- [x] エラーレスポンス仕様
+- [x] 認証ヘッダー仕様
 
 ## API エンドポイント仕様
 
@@ -97,10 +97,10 @@ POST   /api/subscription/cancel    - サブスクキャンセル
 - ANON KEY をAuthorizationヘッダーに入れないこと（セキュリティとRLSの整合のため）。
 
 ## 完了条件
-- [ ] API仕様書のレビュー完了
-- [ ] フロントエンド開発者の承認
-- [ ] バックエンド開発者の承認
-- [ ] モックデータ構造の確定
+- [x] API仕様書のレビュー完了
+- [x] フロントエンド開発者の承認
+- [x] バックエンド開発者の承認
+- [x] モックデータ構造の確定
 
 ## 備考
 - Supabaseの自動生成API（`supabase.from()`）とEdge Functions（`supabase.functions.invoke()`）を活用
