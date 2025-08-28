@@ -78,7 +78,6 @@ coverage/
 .env.production
 
 # MCP configuration (contains secrets)
-mcp.json
 .mcp.json
 
 # Editor
