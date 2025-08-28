@@ -310,7 +310,7 @@ A: TestFlightアプリのインストールを確認
 - `scripts/submit-testflight.sh` - 送信スクリプト
 - `docs/testflight-guide.md` - テスターガイド
 
-最終更新: 2025-08-28
+最終更新: 2025-08-28（iOS先行）
 
 ## Auto-PR（Claude用）
 

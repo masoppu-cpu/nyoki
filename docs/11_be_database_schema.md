@@ -41,10 +41,16 @@ erDiagram
 ## テーブル定義
 
 ### 1. profiles（ユーザープロファイル）
+
+⚠️ **セキュリティ設計の重要事項**:
+- `email`はSupabase Auth側で管理され、認証済みユーザーのみアクセス可能
+- `profiles`テーブルからは`email`フィールドを削除し、必要時は`auth.users`からJOINで取得
+- 個人情報は最小限に留め、RLSポリシーで厳格に保護
+
 ```sql
 CREATE TABLE public.profiles (
   id UUID REFERENCES auth.users(id) PRIMARY KEY,
-  email TEXT UNIQUE NOT NULL,
+  -- emailフィールドは削除（auth.usersで管理）
   name TEXT,
   avatar_url TEXT,
   is_premium BOOLEAN DEFAULT false,
@@ -62,7 +68,7 @@ CREATE TABLE public.profiles (
 );
 
 -- インデックス
-CREATE INDEX idx_profiles_email ON public.profiles(email);
+-- emailインデックスは削除（auth.users側で管理）
 CREATE INDEX idx_profiles_is_premium ON public.profiles(is_premium);
 ```
 
@@ -376,6 +382,20 @@ FOR EACH ROW EXECUTE FUNCTION update_plants_count();
 
 ## RLSポリシー
 
+### 🔒 セキュリティ優先設計
+1. **個人情報の分離**: 
+   - メールアドレスなどの機密情報は`auth.users`で管理
+   - `profiles`にはアプリ固有データのみ保存
+
+2. **アクセス制御の原則**:
+   - デフォルトで全アクセス拒否
+   - 必要最小限の権限のみ許可
+   - サービス管理者のみがアクセス可能なテーブルを明確化
+
+3. **Edge Functions経由のアクセス**:
+   - 機密データ操作は必ずEdge Functions経由
+   - Direct DB accessは最小限に
+
 ```sql
 -- 全テーブルでRLS有効化
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
@@ -388,12 +408,21 @@ ALTER TABLE public.order_items ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.watering_logs ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.purchase_items ENABLE ROW LEVEL SECURITY;
 
--- profilesポリシー
+-- profilesポリシー（厳格化）
 CREATE POLICY "Users can view own profile" ON public.profiles
   FOR SELECT USING (auth.uid() = id);
 
 CREATE POLICY "Users can update own profile" ON public.profiles
-  FOR UPDATE USING (auth.uid() = id);
+  FOR UPDATE USING (auth.uid() = id)
+  WITH CHECK (
+    -- emailやIDなど重要フィールドの変更を防ぐ
+    id = auth.uid() AND
+    -- is_premiumなどの課金フィールドは直接変更不可
+    is_premium = (SELECT is_premium FROM public.profiles WHERE id = auth.uid())
+  );
+
+-- INSERTはauth.trigger経由のみ（ユーザー作成時）
+-- DELETEは不許可（論理削除を推奨）
 
 -- user_plantsポリシー
 CREATE POLICY "Users can manage own plants" ON public.user_plants
@@ -429,10 +458,70 @@ VALUES
 - [ ] 初期データ投入完了
 - [ ] マイグレーションテスト完了
 
+## セキュリティ実装ガイド
+
+### 1. ユーザー情報の取得パターン
+
+```typescript
+// ❌ 避けるべき実装: profilesテーブルから直接email取得
+const { data } = await supabase
+  .from('profiles')
+  .select('email, name')  // emailはprofilesに存在しない
+
+// ✅ 推奨実装: auth.users経由でemail取得
+const { data: { user } } = await supabase.auth.getUser()
+const email = user?.email  // 認証済みユーザーのみアクセス可能
+
+// ✅ サーバーサイド（Edge Functions）での実装
+const { data } = await supabaseAdmin
+  .from('profiles')
+  .select(`
+    id,
+    name,
+    users:auth.users!inner(email)
+  `)
+  .eq('id', userId)
+```
+
+### 2. Edge Functions でのアクセス制御
+
+```typescript
+// Service Roleキーを使用（管理者権限）
+const supabaseAdmin = createClient(
+  process.env.SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!,  // RLSをバイパス
+  {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false
+    }
+  }
+)
+
+// ユーザー認証の確認
+const authHeader = req.headers.get('Authorization')
+if (!authHeader) throw new Error('Not authenticated')
+
+const token = authHeader.replace('Bearer ', '')
+const { data: { user } } = await supabaseAdmin.auth.getUser(token)
+if (!user) throw new Error('Invalid token')
+```
+
+### 3. 機密データの管理原則
+
+| データ種別 | 保存場所 | アクセス方法 | 備考 |
+|-----------|----------|-------------|------|
+| email | auth.users | auth.getUser() | Supabase Auth管理 |
+| password | auth.users | 不可（ハッシュ化） | 自動管理 |
+| 決済情報 | 外部サービス | Edge Functions経由 | RevenueCat等 |
+| 個人識別番号 | 保存しない | - | GDPR/個人情報保護 |
+| アプリ設定 | profiles | RLS制御 | ユーザー自身のみ |
+
 ## 備考
 - 日本語対応のフルテキスト検索実装
 - パフォーマンス考慮したインデックス設計
 - 将来の拡張性を考慮した設計
+- **セキュリティファースト**: 個人情報は最小限、アクセスは厳格に制御
 - 月次使用制限（分析/生成/相談）は`profiles.ai_*_count`で管理し、月初にサーバー側でリセット（ジョブ/関数）
 
 ## 関連ファイル

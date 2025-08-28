@@ -46,8 +46,12 @@ POST   /api/user/plants/:id/water - 水やり記録
 ```typescript
 POST   /api/rooms/analyze         - 部屋画像分析（Functions: analyze-room）
 POST   /api/rooms/generate        - 配置画像生成（Functions: generate-ar-image）
+                                    ※ Gemini 2.5 Flash Image使用
 GET    /api/rooms/history         - 分析履歴取得（Functions: room-history）
 ```
+
+**必要な設定**:
+- Gemini APIキー（GEMINI_API_KEY）→ [設定手順はHUMAN_TODO.md参照]
 
 ### 購入検討リスト（非決済/MVP）
 ```typescript

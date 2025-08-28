@@ -1,9 +1,15 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
+import { initMonitoring, track } from './src/lib/monitoring';
 
 export default function App() {
   const [currentTab, setCurrentTab] = useState('home');
+
+  useEffect(() => {
+    initMonitoring();
+    track('app_start');
+  }, []);
 
   return (
     <View style={styles.container}>

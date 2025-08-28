@@ -7,7 +7,7 @@
 **優先度**: 高（Phase 4）
 
 ## 概要
-EAS Buildを設定し、TestFlight/Google Play向けのビルドを作成。
+EAS Buildを設定し、iOS先行でTestFlight向けのビルドを作成（Androidは後日）。
 
 ## TODO リスト
 
@@ -33,7 +33,7 @@ eas login
 eas build:configure
 ```
 
-## eas.json 設定
+## eas.json 設定（iOS先行）
 
 ### 設定ファイル作成
 ```json
@@ -47,18 +47,12 @@ eas build:configure
       "distribution": "internal",
       "ios": {
         "simulator": true
-      },
-      "android": {
-        "buildType": "apk"
       }
     },
     "preview": {
       "distribution": "internal",
       "ios": {
         "simulator": false
-      },
-      "android": {
-        "buildType": "apk"
       },
       "env": {
         "EXPO_PUBLIC_API_URL": "https://staging-api.nyoki.app"
@@ -67,10 +61,6 @@ eas build:configure
     "production": {
       "ios": {
         "cocoapods": "1.14.2",
-        "resourceClass": "m-medium"
-      },
-      "android": {
-        "buildType": "app-bundle",
         "resourceClass": "m-medium"
       },
       "env": {
@@ -85,10 +75,6 @@ eas build:configure
         "appleId": "nyoki@example.com",
         "ascAppId": "1234567890",
         "appleTeamId": "XXXXXXXXXX"
-      },
-      "android": {
-        "serviceAccountKeyPath": "./google-play-key.json",
-        "track": "internal"
       }
     }
   }
@@ -124,26 +110,14 @@ eas build:configure
         "usesNonExemptEncryption": false
       }
     },
-    "android": {
-      "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#48BB78"
-      },
-      "package": "com.nyoki.app",
-      "versionCode": 1,
-      "permissions": [
-        "CAMERA",
-        "READ_EXTERNAL_STORAGE"
-      ]
-    },
+    
     "plugins": [
       "expo-camera",
       "expo-image-picker",
       [
         "react-native-purchases",
         {
-          "iosApiKey": "$REVENUECAT_IOS_KEY",
-          "androidApiKey": "$REVENUECAT_ANDROID_KEY"
+          "iosApiKey": "$REVENUECAT_IOS_KEY"
         }
       ],
       [
@@ -316,7 +290,7 @@ eas build:view <build-id> --json
 - `app.json` - Expo設定（✅更新済み）
 - `.easignore` - EASビルド除外設定（必要に応じて）
 
-最終更新: 2025-08-28
+最終更新: 2025-08-28（iOS先行、Androidは後日）
 
 ## Auto-PR（Claude用）
 
