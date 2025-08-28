@@ -37,7 +37,7 @@
 
 ---
 
-## 2. Google Gemini API設定 【画像生成に必須】
+## 2. Google Gemini API設定 【画像生成に必須（本番は後日最適化）】
 
 ### APIキー取得
 - [×] [Google AI Studio](https://aistudio.google.com/app/apikey)にアクセス
@@ -84,7 +84,7 @@
 
 ---
 
-## 3. Expo設定
+## 3. Expo/EAS設定（iOS先行・TestFlight配布）
 
 ### Expoアカウント作成
 - [×] [Expo](https://expo.dev/)でアカウント作成
@@ -99,28 +99,34 @@
 - [×] ユーザー名とパスワードを入力
 - [×] ログイン成功を確認
 
-### EAS設定（後で必要になります）
+### EAS設定（Dev Client→TestFlightの順で）
 - [×] プロジェクトオーナーを設定
   ```bash
   npx eas init
   ```
-- [×] プロジェクトIDが生成されることを確認
+ - [×] プロジェクトIDが生成されることを確認
+ - [×] iOS向けにDev/Preview/Productionプロファイルを用意（eas.json）
+ - [×] TestFlight配布に必要なApple情報（Apple ID/Team ID）を準備
+
+### テスト配布の流れ（概要）
+1) `npm run build:ios:dev` で開発用Dev Clientを作成→実機で起動確認
+2) `npm run build:ios:preview` で内部配布用ビルド→TestFlightでチーム内確認
+3) `npm run build:ios:prod` で申請用ビルド→提出
 
 ---
 
-## 4. GitHub設定確認
+## 4. GitHub設定確認（安全運用）
 
 ### リポジトリ確認
 - [×] https://github.com/masoppu-cpu/nyoki.git が正しく設定されているか確認
 - [×] プライベートリポジトリになっているか確認
 - [×] README.mdが表示されるか確認
 
-### Secrets設定（CI/CD用・後で設定）
+### Secrets設定（必要に応じて）
 - [×] Settings → Secrets and variables → Actions
 - [×] 以下のSecretsを後で追加予定：
-  - `SUPABASE_SERVICE_ROLE_KEY`
-  - `GEMINI_API_KEY`
-  - `EXPO_TOKEN`
+  - `EXPO_TOKEN`（EASの自動ビルド用・任意）
+  - `SENTRY_DSN` / `MIXPANEL_TOKEN`（任意・あれば）
 
 ---
 
