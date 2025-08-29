@@ -36,6 +36,8 @@ jobs:
           supabase migration repair --status applied 20250128_000001 20250128_000002 || true
           # Some projects store full names in history; try name variants as well
           supabase migration repair --status applied 20250128_000001_initial_setup 20250128_000002_storage_setup || true
+          # Some setups use numeric timestamps without underscores (YYYYMMDDHHMMSS)
+          supabase migration repair --status applied 20250128000001 20250128000002 || true
 
       - name: Push migrations
         run: |
