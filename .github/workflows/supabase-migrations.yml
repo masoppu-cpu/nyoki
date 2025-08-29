@@ -34,6 +34,8 @@ jobs:
         run: |
           # Mark legacy initial migrations as applied on remote to avoid re-creating existing tables
           supabase migration repair --status applied 20250128_000001 20250128_000002 || true
+          # Some projects store full names in history; try name variants as well
+          supabase migration repair --status applied 20250128_000001_initial_setup 20250128_000002_storage_setup || true
 
       - name: Push migrations
         run: |
