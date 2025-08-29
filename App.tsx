@@ -4,10 +4,9 @@ import { StatusBar } from 'expo-status-bar';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { initMonitoring, track } from './src/lib/monitoring';
 import { OnboardingScreen } from './src/screens/OnboardingScreen';
-import { COLORS, FONT_SIZE } from './src/config/constants';
+import { COLORS } from './src/config/constants';
 
 export default function App() {
-  const [currentTab, setCurrentTab] = useState('home');
   const [showOnboarding, setShowOnboarding] = useState<boolean | null>(null);
 
   useEffect(() => {
