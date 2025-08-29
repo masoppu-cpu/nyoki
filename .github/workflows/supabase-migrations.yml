@@ -38,6 +38,17 @@ jobs:
           supabase migration repair --status applied 20250128_000001_initial_setup 20250128_000002_storage_setup || true
           # Some setups use numeric timestamps without underscores (YYYYMMDDHHMMSS)
           supabase migration repair --status applied 20250128000001 20250128000002 || true
+          # Try exhaustive variants including with .sql extension
+          for v in \
+            20250128_000001_initial_setup.sql \
+            20250128_000001_initial_setup \
+            20250128_000001 \
+            20250128000001 \
+            20250128_000002_storage_setup.sql \
+            20250128_000002_storage_setup \
+            20250128_000002 \
+            20250128000002; do
+            echo "Repair apply: $v"; supabase migration repair --status applied "$v" || true; done
 
       - name: Revert stray remote-only version 20250128 (if present)
         run: |
