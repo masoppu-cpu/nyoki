@@ -11,12 +11,12 @@ Supabaseデータベースのテーブル設計とマイグレーション実行
 
 ## TODO リスト
 
-- [ ] テーブル設計書作成
-- [ ] マイグレーションファイル作成
-- [ ] インデックス設定
-- [ ] RLS（Row Level Security）ポリシー設定
-- [ ] 初期データ投入
-- [ ] バックアップ設定
+- [x] テーブル設計書作成（本ドキュメント）
+- [x] マイグレーションファイル作成（supabase/migrations/20250829_000003_schema_update.sql）
+- [x] インデックス設定（同上に反映）
+- [x] RLS（Row Level Security）ポリシー設定（同上に反映）
+- [x] 初期データ投入（supabase/seed.sql：開発用）
+- [ ] バックアップ設定（Supabase側の自動バックアップ有効化）
 
 ## データベース設計
 
@@ -109,6 +109,8 @@ CREATE INDEX idx_plants_is_available ON public.plants(is_available);
 -- フルテキスト検索用
 CREATE INDEX idx_plants_search ON public.plants 
   USING gin(to_tsvector('japanese', name || ' ' || COALESCE(description, '')));
+
+注: 日本語形態素解析の設定はPostgreSQLの辞書に依存します。必要に応じて管理画面/拡張で調整してください。
 ```
 
 ### 3. user_plants（ユーザーの植物）
@@ -529,6 +531,22 @@ if (!user) throw new Error('Invalid token')
 - `supabase/seed.sql` - 初期データ
 
 最終更新: 2025-08-28
+（運用更新: GitHub Actions から自動適用対応 2025-08-29）
+
+## 運用（自動マイグレーション）
+
+- GitHub Secrets（設定済み想定）
+  - `SUPABASE_ACCESS_TOKEN`
+  - `SUPABASE_PROJECT_REF`
+  - `SUPABASE_DB_PASSWORD`
+- Workflow: `.github/workflows/supabase-migrations.yml`
+  - `push`（`main`かつ`supabase/migrations/**`変更）で `supabase db push`
+  - `workflow_dispatch` で手動実行可能
+  - 手動実行手順: GitHub Actions → Supabase DB Migrations → Run workflow → main を選択
+
+## バックアップ設定（TODO）
+- Supabase Dashboard → Database → Backups で自動バックアップを有効化
+- 重要テーブルのエクスポート/復旧手順を `docs/backup_restore.md` にまとめる（未作成）
 
 ## Auto-PR（Claude用）
 
