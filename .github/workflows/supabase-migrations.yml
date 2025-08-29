@@ -32,4 +32,4 @@ jobs:
 
       - name: Push migrations
         run: |
-          supabase db push
+          supabase db push --include-all
