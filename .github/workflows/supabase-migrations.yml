@@ -49,32 +49,7 @@ jobs:
           # Some environments recorded a short version '20250829' not present locally
           supabase migration repair --status reverted 20250829 || true
 
-      - name: Auto-repair pending migrations via dry-run
-        run: |
-          # Run a dry-run to list pending migrations without applying them
-          OUT=$(printf "n\n" | supabase db push --include-all --dry-run 2>&1 || true)
-          echo "$OUT"
-          # Extract bullet list lines starting with ' • '
-          PENDING=$(echo "$OUT" | sed -n 's/^ \• \(.*\)$/\1/p')
-          echo "Pending detected: $PENDING"
-          for file in $PENDING; do
-            base=${file%.sql}
-            echo "Repairing as applied: $base"
-            supabase migration repair --status applied "$base" || true
-          done
-
-      - name: Temporarily ignore legacy initial migrations in CI
-        run: |
-          mkdir -p ../_ci_ignore
-          # Move legacy initial migrations out so db push only applies new ones
-          for f in \
-            migrations/20250128_000001_initial_setup.sql \
-            migrations/20250128_000002_storage_setup.sql; do
-            if [ -f "$f" ]; then
-              echo "Temporarily moving $f"
-              mv "$f" ../_ci_ignore/
-            fi
-          done
+      # No more auto-repair or file moving; history is aligned via placeholders
 
       - name: Push migrations
         run: |
