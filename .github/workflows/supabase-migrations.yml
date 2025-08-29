@@ -30,6 +30,11 @@ jobs:
             --project-ref "$SUPABASE_PROJECT_REF" \
             --password "$SUPABASE_DB_PASSWORD"
 
+      - name: Repair migration history (mark initial as applied)
+        run: |
+          # Mark legacy initial migrations as applied on remote to avoid re-creating existing tables
+          supabase migration repair --status applied 20250128_000001 20250128_000002 || true
+
       - name: Push migrations
         run: |
-          supabase db push --include-all
+          supabase db push --include-all --non-interactive
