@@ -1,6 +1,9 @@
 name: Supabase DB Migrations
 
 on:
+  pull_request:
+    paths:
+      - 'supabase/migrations/**'
   push:
     branches: [ main ]
     paths:
@@ -33,8 +36,6 @@ jobs:
             --project-ref "$SUPABASE_PROJECT_REF" \
             --password "$SUPABASE_DB_PASSWORD"
 
-      # Clean push without pre-repair; schema_migrations should be authoritative
-
       - name: Push migrations
         run: |
-          printf "y\n" | supabase db push --include-all
+          supabase db push --include-all
