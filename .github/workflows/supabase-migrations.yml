@@ -10,6 +10,9 @@ on:
 jobs:
   migrate:
     runs-on: ubuntu-latest
+    concurrency:
+      group: supabase-migrations
+      cancel-in-progress: true
     defaults:
       run:
         working-directory: supabase
@@ -30,37 +33,7 @@ jobs:
             --project-ref "$SUPABASE_PROJECT_REF" \
             --password "$SUPABASE_DB_PASSWORD"
 
-      - name: Repair migration history (mark initial as applied)
-        run: |
-          # Mark legacy initial migrations as applied on remote to avoid re-creating existing tables
-          supabase migration repair --status applied 20250128_000001 20250128_000002 || true
-          # Some projects store full names in history; try name variants as well
-          supabase migration repair --status applied 20250128_000001_initial_setup 20250128_000002_storage_setup || true
-          # Some setups use numeric timestamps without underscores (YYYYMMDDHHMMSS)
-          supabase migration repair --status applied 20250128000001 20250128000002 || true
-          # Try exhaustive variants including with .sql extension
-          for v in \
-            20250128_000001_initial_setup.sql \
-            20250128_000001_initial_setup \
-            20250128_000001 \
-            20250128000001 \
-            20250128_000002_storage_setup.sql \
-            20250128_000002_storage_setup \
-            20250128_000002 \
-            20250128000002; do
-            echo "Repair apply: $v"; supabase migration repair --status applied "$v" || true; done
-
-      - name: Revert stray remote-only version 20250128 (if present)
-        run: |
-          # Some environments recorded a short version '20250128' not present locally
-          supabase migration repair --status reverted 20250128 || true
-
-      - name: Revert stray remote-only version 20250829 (if present)
-        run: |
-          # Some environments recorded a short version '20250829' not present locally
-          supabase migration repair --status reverted 20250829 || true
-
-      # No more auto-repair or file moving; history is aligned via placeholders
+      # Clean push without pre-repair; schema_migrations should be authoritative
 
       - name: Push migrations
         run: |
