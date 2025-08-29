@@ -39,6 +39,11 @@ jobs:
           # Some setups use numeric timestamps without underscores (YYYYMMDDHHMMSS)
           supabase migration repair --status applied 20250128000001 20250128000002 || true
 
+      - name: Revert stray remote-only version 20250128 (if present)
+        run: |
+          # Some environments recorded a short version '20250128' not present locally
+          supabase migration repair --status reverted 20250128 || true
+
       - name: Auto-repair pending migrations via dry-run
         run: |
           # Run a dry-run to list pending migrations without applying them
