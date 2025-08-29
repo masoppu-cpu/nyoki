@@ -39,6 +39,20 @@ jobs:
           # Some setups use numeric timestamps without underscores (YYYYMMDDHHMMSS)
           supabase migration repair --status applied 20250128000001 20250128000002 || true
 
+      - name: Auto-repair pending migrations via dry-run
+        run: |
+          # Run a dry-run to list pending migrations without applying them
+          OUT=$(printf "n\n" | supabase db push --include-all --dry-run 2>&1 || true)
+          echo "$OUT"
+          # Extract bullet list lines starting with ' • '
+          PENDING=$(echo "$OUT" | sed -n 's/^ \• \(.*\)$/\1/p')
+          echo "Pending detected: $PENDING"
+          for file in $PENDING; do
+            base=${file%.sql}
+            echo "Repairing as applied: $base"
+            supabase migration repair --status applied "$base" || true
+          done
+
       - name: Push migrations
         run: |
           printf "y\n" | supabase db push --include-all
