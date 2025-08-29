@@ -44,6 +44,11 @@ jobs:
           # Some environments recorded a short version '20250128' not present locally
           supabase migration repair --status reverted 20250128 || true
 
+      - name: Revert stray remote-only version 20250829 (if present)
+        run: |
+          # Some environments recorded a short version '20250829' not present locally
+          supabase migration repair --status reverted 20250829 || true
+
       - name: Auto-repair pending migrations via dry-run
         run: |
           # Run a dry-run to list pending migrations without applying them
