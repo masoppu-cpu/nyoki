@@ -52,21 +52,21 @@ export default function App() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: COLORS.base,
     alignItems: 'center',
     justifyContent: 'center',
   },
   loadingContainer: {
-    backgroundColor: COLORS.background,
+    backgroundColor: COLORS.base,
   },
   title: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#2D3748',
+    color: COLORS.textOnBase,
     marginBottom: 8,
   },
   subtitle: {
     fontSize: 16,
-    color: '#718096',
+    color: COLORS.textSecondary,
   },
 });

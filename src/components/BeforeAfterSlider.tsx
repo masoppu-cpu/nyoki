@@ -33,7 +33,7 @@ const BeforeAfterSlider: React.FC<BeforeAfterSliderProps> = ({ beforeImage, afte
       >
         <View style={styles.sliderLine} />
         <View style={styles.sliderButton}>
-          <Ionicons name="code" size={20} color={COLORS.background} />
+          <Ionicons name="code" size={20} color={COLORS.textOnAccent} />
         </View>
       </View>
     </View>
@@ -71,13 +71,13 @@ const styles = StyleSheet.create({
     position: 'absolute',
     width: 2,
     height: '100%',
-    backgroundColor: COLORS.background,
+    backgroundColor: COLORS.base,
   },
   sliderButton: {
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: COLORS.primary,
+    backgroundColor: COLORS.accent,
     alignItems: 'center',
     justifyContent: 'center',
     shadowColor: '#000',

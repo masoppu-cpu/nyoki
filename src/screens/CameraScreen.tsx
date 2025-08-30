@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, Image, StyleSheet, Alert } from 'react-native';
+import { View, Text, TouchableOpacity, Image, StyleSheet, Alert, Linking } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
+import * as ImageManipulator from 'expo-image-manipulator';
 import { Ionicons } from '@expo/vector-icons';
 import { COLORS, FONT_SIZE, SPACING, BORDER_RADIUS } from '../config/constants';
+import CameraOverlay from '../components/CameraOverlay';
 
 interface CameraScreenProps {
   onImageCaptured: (imageUri: string) => void;
@@ -11,42 +13,76 @@ interface CameraScreenProps {
 
 const CameraScreen: React.FC<CameraScreenProps> = ({ onImageCaptured, onBack }) => {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [showOverlay, setShowOverlay] = useState(false);
+
+  const optimizeImage = async (imageUri: string) => {
+    const manipResult = await ImageManipulator.manipulateAsync(
+      imageUri,
+      [{ resize: { width: 1080 } }],
+      { compress: 0.8, format: ImageManipulator.SaveFormat.JPEG }
+    );
+    return manipResult.uri;
+  };
 
   const pickImageFromCamera = async () => {
     const { status } = await ImagePicker.requestCameraPermissionsAsync();
     if (status !== 'granted') {
-      Alert.alert('権限エラー', 'カメラへのアクセス権限が必要です');
+      Alert.alert(
+        'カメラアクセス許可',
+        'お部屋を撮影するためにカメラへのアクセスが必要です',
+        [
+          { text: 'キャンセル', style: 'cancel' },
+          { text: '設定を開く', onPress: () => Linking.openSettings() }
+        ]
+      );
       return;
     }
 
+    setShowOverlay(true);
     const result = await ImagePicker.launchCameraAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      aspect: [4, 3],
+      allowsEditing: false,
       quality: 0.8,
+      base64: true,
     });
 
+    setShowOverlay(false);
     if (!result.canceled && result.assets[0]) {
-      setSelectedImage(result.assets[0].uri);
+      setIsProcessing(true);
+      const optimizedUri = await optimizeImage(result.assets[0].uri);
+      setSelectedImage(optimizedUri);
+      setIsProcessing(false);
     }
   };
 
   const pickImageFromLibrary = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== 'granted') {
-      Alert.alert('権限エラー', 'フォトライブラリへのアクセス権限が必要です');
+      Alert.alert(
+        'ライブラリアクセス許可',
+        '写真を選択するためにフォトライブラリへのアクセスが必要です',
+        [
+          { text: 'キャンセル', style: 'cancel' },
+          { text: '設定を開く', onPress: () => Linking.openSettings() }
+        ]
+      );
       return;
     }
 
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
-      aspect: [4, 3],
+      aspect: [16, 9],
       quality: 0.8,
+      base64: true,
     });
 
     if (!result.canceled && result.assets[0]) {
-      setSelectedImage(result.assets[0].uri);
+      setIsProcessing(true);
+      const optimizedUri = await optimizeImage(result.assets[0].uri);
+      setSelectedImage(optimizedUri);
+      setIsProcessing(false);
     }
   };
 
@@ -60,13 +96,23 @@ const CameraScreen: React.FC<CameraScreenProps> = ({ onImageCaptured, onBack }) 
     <View style={styles.container}>
       <View style={styles.header}>
         <TouchableOpacity onPress={onBack} style={styles.backButton}>
-          <Ionicons name="arrow-back" size={24} color={COLORS.text} />
+          <Ionicons name="arrow-back" size={24} color={COLORS.textOnBase} />
         </TouchableOpacity>
         <Text style={styles.title}>お部屋を撮影</Text>
         <View style={{ width: 24 }} />
       </View>
 
       <View style={styles.content}>
+        {showOverlay && <CameraOverlay />}
+        
+        {isProcessing && (
+          <View style={styles.processingOverlay}>
+            <View style={styles.processingBox}>
+              <Text style={styles.processingText}>画像を最適化中...</Text>
+            </View>
+          </View>
+        )}
+        
         {selectedImage ? (
           <>
             <Image source={{ uri: selectedImage }} style={styles.preview} resizeMode="cover" />
@@ -112,7 +158,7 @@ const CameraScreen: React.FC<CameraScreenProps> = ({ onImageCaptured, onBack }) 
 
             <View style={styles.actions}>
               <TouchableOpacity style={styles.cameraButton} onPress={pickImageFromCamera}>
-                <Ionicons name="camera" size={24} color={COLORS.background} />
+                <Ionicons name="camera" size={24} color={COLORS.textOnPrimary} />
                 <Text style={styles.cameraButtonText}>カメラで撮影</Text>
               </TouchableOpacity>
               <TouchableOpacity style={styles.libraryButton} onPress={pickImageFromLibrary}>
@@ -130,7 +176,7 @@ const CameraScreen: React.FC<CameraScreenProps> = ({ onImageCaptured, onBack }) 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.background,
+    backgroundColor: COLORS.base,
   },
   header: {
     flexDirection: 'row',
@@ -147,7 +193,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: FONT_SIZE.lg,
     fontWeight: 'bold',
-    color: COLORS.text,
+    color: COLORS.textOnBase,
   },
   content: {
     flex: 1,
@@ -188,7 +234,7 @@ const styles = StyleSheet.create({
   },
   retakeButtonText: {
     fontSize: FONT_SIZE.md,
-    color: COLORS.text,
+    color: COLORS.textOnBase,
     fontWeight: '600',
   },
   analyzeButton: {
@@ -200,7 +246,7 @@ const styles = StyleSheet.create({
   },
   analyzeButtonText: {
     fontSize: FONT_SIZE.md,
-    color: COLORS.background,
+    color: COLORS.textOnPrimary,
     fontWeight: '600',
   },
   tips: {
@@ -212,7 +258,7 @@ const styles = StyleSheet.create({
   tipsTitle: {
     fontSize: FONT_SIZE.md,
     fontWeight: '600',
-    color: COLORS.text,
+    color: COLORS.textOnBase,
     marginBottom: SPACING.sm,
   },
   tipItem: {
@@ -239,7 +285,7 @@ const styles = StyleSheet.create({
   },
   cameraButtonText: {
     fontSize: FONT_SIZE.md,
-    color: COLORS.background,
+    color: COLORS.textOnPrimary,
     fontWeight: '600',
     marginLeft: SPACING.sm,
   },
@@ -258,6 +304,28 @@ const styles = StyleSheet.create({
     color: COLORS.primary,
     fontWeight: '600',
     marginLeft: SPACING.sm,
+  },
+  processingOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 1000,
+  },
+  processingBox: {
+    backgroundColor: COLORS.base,
+    padding: SPACING.lg,
+    borderRadius: BORDER_RADIUS.md,
+    alignItems: 'center',
+  },
+  processingText: {
+    fontSize: FONT_SIZE.md,
+    color: COLORS.textOnBase,
+    fontWeight: '600',
   },
 });
 
