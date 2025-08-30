@@ -319,10 +319,11 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onComplete }
   const Page3: React.FC<{ isActive: boolean }> = ({ isActive }) => {
     const addScale = useRef(new Animated.Value(1)).current;
     const [localPurchaseAdded, setLocalPurchaseAdded] = useState(false);
+    const [hasAnimated, setHasAnimated] = useState(false);
     
-    // 自動でボタンを押すアニメーション
+    // 自動でボタンを押すアニメーション（1回のみ）
     useEffect(() => {
-      if (isActive) {
+      if (isActive && !hasAnimated) {
         const timer = setTimeout(() => {
           // ボタンを押す演出
           setLocalPurchaseAdded(true);
@@ -338,36 +339,16 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onComplete }
               useNativeDriver: true,
             }),
           ]).start();
-          
-          // 2秒後に元に戻す
-          setTimeout(() => {
-            setLocalPurchaseAdded(false);
-            // 3秒後にまた繰り返す
-            setTimeout(() => {
-              if (isActive) {
-                setLocalPurchaseAdded(true);
-                Animated.sequence([
-                  Animated.timing(addScale, {
-                    toValue: 0.9,
-                    duration: 150,
-                    useNativeDriver: true,
-                  }),
-                  Animated.spring(addScale, {
-                    toValue: 1,
-                    friction: 3,
-                    useNativeDriver: true,
-                  }),
-                ]).start();
-              }
-            }, 3000);
-          }, 2000);
+          setHasAnimated(true);
         }, 1500); // 画面表示から1.5秒後に開始
         
         return () => clearTimeout(timer);
-      } else {
+      } else if (!isActive) {
+        // 画面から離れたらリセット
         setLocalPurchaseAdded(false);
+        setHasAnimated(false);
       }
-    }, [isActive]);
+    }, [isActive, hasAnimated]);
 
     return (
       <View style={[styles.slide, { width, paddingTop: 60 }]} accessibilityLabel="購入リストで簡単管理">
@@ -445,73 +426,61 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onComplete }
 
   // 画面4: 購入後のサポート機能
   const Page4: React.FC<{ isActive: boolean }> = ({ isActive }) => {
-    const waterScale = useRef(new Animated.Value(1)).current;
+    const checkScale = useRef(new Animated.Value(1)).current;
     const [localWaterDone, setLocalWaterDone] = useState(false);
     const [localChatOpen, setLocalChatOpen] = useState(false);
+    const [hasWaterAnimated, setHasWaterAnimated] = useState(false);
+    const [hasChatAnimated, setHasChatAnimated] = useState(false);
     
-    // 自動アニメーション
+    // 自動アニメーション（1回のみ）
     useEffect(() => {
       if (isActive) {
-        // 1. 水やりボタンを自動でタップ
-        const waterTimer = setTimeout(() => {
-          setLocalWaterDone(true);
-          Animated.sequence([
-            Animated.timing(waterScale, {
-              toValue: 1.3,
-              duration: 200,
-              useNativeDriver: true,
-            }),
-            Animated.spring(waterScale, {
-              toValue: 1,
-              friction: 3,
-              useNativeDriver: true,
-            }),
-          ]).start();
-        }, 1500);
+        // 1. 水やりチェックボックスを自動でタップ
+        if (!hasWaterAnimated) {
+          const waterTimer = setTimeout(() => {
+            setLocalWaterDone(true);
+            Animated.sequence([
+              Animated.timing(checkScale, {
+                toValue: 1.3,
+                duration: 200,
+                useNativeDriver: true,
+              }),
+              Animated.spring(checkScale, {
+                toValue: 1,
+                friction: 3,
+                useNativeDriver: true,
+              }),
+            ]).start();
+            setHasWaterAnimated(true);
+          }, 1500);
+        }
         
         // 2. AI相談モーダルを自動で開く
-        const chatTimer = setTimeout(() => {
-          setLocalChatOpen(true);
-          setScrollEnabled(false);
-          
-          // 3秒後に自動で閉じる
-          setTimeout(() => {
-            setLocalChatOpen(false);
-            setScrollEnabled(true);
+        if (!hasChatAnimated) {
+          const chatTimer = setTimeout(() => {
+            setLocalChatOpen(true);
+            setScrollEnabled(false);
+            setHasChatAnimated(true);
             
-            // 水やりボタンをリセット
-            setLocalWaterDone(false);
-            
-            // 3秒後にまたサイクルを繰り返す
+            // 3秒後に自動で閉じる
             setTimeout(() => {
-              if (isActive) {
-                setLocalWaterDone(true);
-                Animated.sequence([
-                  Animated.timing(waterScale, {
-                    toValue: 1.3,
-                    duration: 200,
-                    useNativeDriver: true,
-                  }),
-                  Animated.spring(waterScale, {
-                    toValue: 1,
-                    friction: 3,
-                    useNativeDriver: true,
-                  }),
-                ]).start();
-              }
+              setLocalChatOpen(false);
+              setScrollEnabled(true);
             }, 3000);
-          }, 3000);
-        }, 3500);
-        
-        return () => {
-          clearTimeout(waterTimer);
-          clearTimeout(chatTimer);
-        };
+          }, 3500);
+          
+          return () => {
+            clearTimeout(chatTimer);
+          };
+        }
       } else {
+        // 画面から離れたらリセット
         setLocalWaterDone(false);
         setLocalChatOpen(false);
+        setHasWaterAnimated(false);
+        setHasChatAnimated(false);
       }
-    }, [isActive]);
+    }, [isActive, hasWaterAnimated, hasChatAnimated]);
 
     return (
       <ScrollView
@@ -534,14 +503,29 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onComplete }
             />
             <View style={{ flex: 1 }}>
               <Text style={styles.careTitle}>モンステラ</Text>
-              <Text style={styles.careSub}>水やり</Text>
+              <View style={styles.taskRow}>
+                <Ionicons
+                  name="water-outline"
+                  size={18}
+                  color={COLORS.textSecondary}
+                  style={{ marginRight: 6 }}
+                />
+                <Text style={styles.careSub}>水やり</Text>
+              </View>
             </View>
-            <Animated.View style={{ transform: [{ scale: waterScale }] }}>
-              <Ionicons
-                name={localWaterDone ? 'checkmark-circle' : 'water-outline'}
-                size={32}
-                color={localWaterDone ? COLORS.primary : COLORS.textSecondary}
-              />
+            <Animated.View style={{ transform: [{ scale: checkScale }] }}>
+              <View style={[
+                styles.checkbox,
+                localWaterDone && styles.checkboxDone
+              ]}>
+                {localWaterDone && (
+                  <Ionicons
+                    name="checkmark"
+                    size={18}
+                    color={COLORS.textOnPrimary}
+                  />
+                )}
+              </View>
             </Animated.View>
           </View>
         </View>
@@ -1011,6 +995,24 @@ const styles = StyleSheet.create({
   careSub: {
     fontSize: 14,
     color: COLORS.textSecondary,
+  },
+  taskRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  checkbox: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    borderWidth: 2,
+    borderColor: COLORS.border,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: COLORS.surface,
+  },
+  checkboxDone: {
+    backgroundColor: COLORS.primary,
+    borderColor: COLORS.primary,
   },
   aiConsultButton: {
     backgroundColor: COLORS.accent,
