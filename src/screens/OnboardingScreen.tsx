@@ -152,7 +152,7 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onComplete }
       disabled={!canTap}
     >
       <ImageBackground
-        source={require('../../assets/images/room-after-nordic.jpg')}
+        source={require('../../assets/images/room-after-nordic2.png')}
         style={[styles.slideBg, { width }]}
         imageStyle={styles.bgImage}
         blurRadius={blurLevel}
@@ -304,7 +304,7 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onComplete }
         >
           <BeforeAfterSlider
             beforeImage={require('../../assets/images/room-before-nordic.jpeg')}
-            afterImage={require('../../assets/images/room-after-nordic.jpg')}
+            afterImage={require('../../assets/images/room-after-nordic2.png')}
             initialPercent={0.5}
             autoAnimate={{ from: 1, to: 0.2, duration: 2000, delay: 600 }}
             onInteractionStart={() => setScrollEnabled(false)}
@@ -596,7 +596,7 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onComplete }
   // 画面5: 行動喚起 (Call to Action)
   const Page5 = () => (
     <ImageBackground
-      source={require('../../assets/images/room-after-nordic.jpg')}
+      source={require('../../assets/images/room-after-nordic2.png')}
       style={[styles.slideBg, { width }]}
       imageStyle={styles.bgImage}
       accessibilityLabel="おしゃれなリビングルーム"
