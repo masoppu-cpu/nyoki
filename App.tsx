@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, ActivityIndicator, TouchableOpacity, Alert } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { initMonitoring, track } from './src/lib/monitoring';
@@ -42,7 +42,20 @@ export default function App() {
   // メインアプリを表示
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>nyoki - Plant Placement App</Text>
+      <TouchableOpacity
+        onLongPress={async () => {
+          try {
+            await AsyncStorage.removeItem('hasSeenOnboarding');
+            setShowOnboarding(true);
+            Alert.alert('Onboardingをリセットしました');
+          } catch (e) {
+            console.warn('Failed to reset onboarding flag', e);
+          }
+        }}
+        accessibilityLabel="タイトル（長押しでオンボーディングをリセット）"
+      >
+        <Text style={styles.title}>nyoki - Plant Placement App</Text>
+      </TouchableOpacity>
       <Text style={styles.subtitle}>AI-powered room visualization for plant lovers</Text>
       <StatusBar style="auto" />
     </View>
