@@ -39,16 +39,68 @@
 ## 2. アプリストア開発者登録
 
 ### Apple Developer Program 【時間がかかる】
-- [ ] [Apple Developer](https://developer.apple.com/jp/programs/)にアクセス
-- [ ] 個人 or 法人を選択
-- [ ] 年会費 $99（約14,800円）の支払い
-- [ ] 必要書類：
-  - [ ] 本人確認書類
+- [×] [Apple Developer](https://developer.apple.com/jp/programs/)にアクセス
+- [×] 個人 or 法人を選択
+- [×] 年会費 $99（約14,800円）の支払い
+- [×] 必要書類：
+  - [×] 本人確認書類
   - [ ] D-U-N-S番号（法人の場合）
-- [ ] 審査待ち（2〜7日）
-- [ ] Developer証明書の作成
+- [×] 審査待ち（2〜7日）
+- [×] iOS証明書・プロビジョニング設定（開発用/配布用）
 
-### Google Play Developer
+#### はじめに（何を作るか）
+- 開発用: Apple Development 証明書 + iOS App Development プロビジョニングプロファイル（実機デバッグ/Dev Client用）
+- 配布用: Apple Distribution 証明書 + App Store プロビジョニングプロファイル（TestFlight/申請用）
+
+#### 1) かんたん手順（推奨: EASが自動作成・管理）
+1. ターミナルでExpo/EASにログイン
+   ```bash
+   npx expo login
+   npx eas login
+   ```
+2. 証明書を自動作成
+   ```bash
+   eas credentials
+   ```
+   - iOSを選択 →「Expoに管理させる（Managed by Expo）」を選ぶ
+   - Apple IDでログイン（2段階認証あり）
+   - 指示に従い以下を自動作成/取得
+     - Apple Development 証明書（開発用）
+     - Apple Distribution 証明書（配布用）
+     - iOS App Development プロビジョニング（開発用）
+     - App Store プロビジョニング（配布用）
+3. 確認（省略可）
+   - `eas credentials -p ios` で一覧を表示し、証明書/プロファイルが揃っていることを確認
+4. 次のステップ
+   - 開発ビルド: `eas build --platform ios --profile development`
+   - TestFlight用: `eas build --platform ios --profile preview` or `production`
+   - 詳細は `docs/23_eas_build.md` を参照
+
+#### 2) 手動手順（必要な場合のみ）
+1. Apple Developerの「Certificates, Identifiers & Profiles」にアクセス
+2. Identifiers（アプリID）
+   - 新規作成（Bundle IDはプロジェクト設定と一致させる）
+3. Certificates（証明書）を作成
+   - Apple Development（開発用）
+   - Apple Distribution（配布用）
+   - 画面の指示に従いCSRアップロード→.cerダウンロード
+4. Devices（実機）
+   - 開発で使うiPhoneのUDIDを登録
+5. Profiles（プロビジョニング）を作成
+   - iOS App Development: 開発用証明書 + 対象デバイス + 該当Bundle ID
+   - App Store: 配布用証明書 + 該当Bundle ID
+6. EASに取り込み（手動管理時）
+   ```bash
+   eas credentials
+   ```
+   - iOS → 各種「Upload」オプションで .p12（証明書）/.mobileprovision（プロファイル）をアップロード
+
+ヒント
+- どちらかわからなければ「自動（EAS Managed）」を選ぶのが安全です。
+- 開発用は実機テストやDev Clientで必須、配布用はTestFlight/申請で必須です。
+- よくあるつまずき: Bundle ID不一致、UDID未登録、2段階認証の入力ミス。
+
+### Google Play Developer　今回はスキップ
 - [ ] [Google Play Console](https://play.google.com/console/)にアクセス
 - [ ] 登録料 $25（約3,750円）の支払い
 - [ ] 開発者情報を入力
