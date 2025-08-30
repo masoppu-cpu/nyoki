@@ -36,7 +36,7 @@ const PlantCard: React.FC<PlantCardProps> = ({ plant, onPress, onAddToPurchaseLi
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: COLORS.background,
+    backgroundColor: COLORS.base,
     borderRadius: BORDER_RADIUS.md,
     overflow: 'hidden',
     marginBottom: SPACING.md,
@@ -59,7 +59,7 @@ const styles = StyleSheet.create({
   name: {
     fontSize: FONT_SIZE.lg,
     fontWeight: 'bold',
-    color: COLORS.text,
+    color: COLORS.textOnBase,
     marginBottom: SPACING.xs,
   },
   size: {
@@ -74,7 +74,7 @@ const styles = StyleSheet.create({
   },
   difficulty: {
     fontSize: FONT_SIZE.sm,
-    color: COLORS.primary,
+    color: COLORS.accent,
     fontWeight: '500',
   },
   light: {
@@ -95,16 +95,16 @@ const styles = StyleSheet.create({
   price: {
     fontSize: FONT_SIZE.xl,
     fontWeight: 'bold',
-    color: COLORS.text,
+    color: COLORS.textOnBase,
   },
   cartButton: {
-    backgroundColor: COLORS.primary,
+    backgroundColor: COLORS.accent,
     paddingHorizontal: SPACING.md,
     paddingVertical: SPACING.sm,
     borderRadius: BORDER_RADIUS.sm,
   },
   cartButtonText: {
-    color: COLORS.background,
+    color: COLORS.textOnAccent,
     fontSize: FONT_SIZE.sm,
     fontWeight: '600',
   },

@@ -96,7 +96,7 @@ const CameraScreen: React.FC<CameraScreenProps> = ({ onImageCaptured, onBack }) 
     <View style={styles.container}>
       <View style={styles.header}>
         <TouchableOpacity onPress={onBack} style={styles.backButton}>
-          <Ionicons name="arrow-back" size={24} color={COLORS.text} />
+          <Ionicons name="arrow-back" size={24} color={COLORS.textOnBase} />
         </TouchableOpacity>
         <Text style={styles.title}>お部屋を撮影</Text>
         <View style={{ width: 24 }} />
@@ -158,7 +158,7 @@ const CameraScreen: React.FC<CameraScreenProps> = ({ onImageCaptured, onBack }) 
 
             <View style={styles.actions}>
               <TouchableOpacity style={styles.cameraButton} onPress={pickImageFromCamera}>
-                <Ionicons name="camera" size={24} color={COLORS.background} />
+                <Ionicons name="camera" size={24} color={COLORS.textOnPrimary} />
                 <Text style={styles.cameraButtonText}>カメラで撮影</Text>
               </TouchableOpacity>
               <TouchableOpacity style={styles.libraryButton} onPress={pickImageFromLibrary}>
@@ -176,7 +176,7 @@ const CameraScreen: React.FC<CameraScreenProps> = ({ onImageCaptured, onBack }) 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.background,
+    backgroundColor: COLORS.base,
   },
   header: {
     flexDirection: 'row',
@@ -193,7 +193,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: FONT_SIZE.lg,
     fontWeight: 'bold',
-    color: COLORS.text,
+    color: COLORS.textOnBase,
   },
   content: {
     flex: 1,
@@ -234,7 +234,7 @@ const styles = StyleSheet.create({
   },
   retakeButtonText: {
     fontSize: FONT_SIZE.md,
-    color: COLORS.text,
+    color: COLORS.textOnBase,
     fontWeight: '600',
   },
   analyzeButton: {
@@ -246,7 +246,7 @@ const styles = StyleSheet.create({
   },
   analyzeButtonText: {
     fontSize: FONT_SIZE.md,
-    color: COLORS.background,
+    color: COLORS.textOnPrimary,
     fontWeight: '600',
   },
   tips: {
@@ -258,7 +258,7 @@ const styles = StyleSheet.create({
   tipsTitle: {
     fontSize: FONT_SIZE.md,
     fontWeight: '600',
-    color: COLORS.text,
+    color: COLORS.textOnBase,
     marginBottom: SPACING.sm,
   },
   tipItem: {
@@ -285,7 +285,7 @@ const styles = StyleSheet.create({
   },
   cameraButtonText: {
     fontSize: FONT_SIZE.md,
-    color: COLORS.background,
+    color: COLORS.textOnPrimary,
     fontWeight: '600',
     marginLeft: SPACING.sm,
   },
@@ -317,14 +317,14 @@ const styles = StyleSheet.create({
     zIndex: 1000,
   },
   processingBox: {
-    backgroundColor: COLORS.background,
+    backgroundColor: COLORS.base,
     padding: SPACING.lg,
     borderRadius: BORDER_RADIUS.md,
     alignItems: 'center',
   },
   processingText: {
     fontSize: FONT_SIZE.md,
-    color: COLORS.text,
+    color: COLORS.textOnBase,
     fontWeight: '600',
   },
 });

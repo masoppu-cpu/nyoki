@@ -29,35 +29,35 @@ const onboardingSlides: OnboardingSlide[] = [
     title: 'お部屋を撮影',
     description: 'スマホでお部屋を撮影するだけ',
     image: require('../../assets/images/room-before.jpg'),
-    backgroundColor: '#E8F5E9',
+    backgroundColor: COLORS.surface,
   },
   {
     id: '2',
     title: 'AIが環境を分析',
     description: '光量・温度・湿度を自動で判定',
     image: require('../../assets/images/camera-interface.jpg'),
-    backgroundColor: '#F3E5F5',
+    backgroundColor: COLORS.surface,
   },
   {
     id: '3',
     title: '最適な植物をご提案',
     description: 'あなたの部屋にぴったりの植物を',
     image: require('../../assets/images/plants-collection.jpg'),
-    backgroundColor: '#E3F2FD',
+    backgroundColor: COLORS.surface,
   },
   {
     id: '4',
     title: '配置をプレビュー',
     description: '購入前に部屋での見た目を確認',
     image: require('../../assets/images/room-after.jpg'),
-    backgroundColor: '#FFF3E0',
+    backgroundColor: COLORS.surface,
   },
   {
     id: '5',
     title: '無料で始められます',
     description: '5つまでの植物を無料で管理\nもっと楽しみたい方は月額480円',
     image: require('../../assets/images/hero-room.jpg'),
-    backgroundColor: '#E8F5E9',
+    backgroundColor: COLORS.surface,
   },
 ];
 
@@ -155,8 +155,8 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onComplete }
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.background,
-  },
+    backgroundColor: COLORS.base,
+  }
   slide: {
     flex: 1,
     alignItems: 'center',
@@ -173,7 +173,7 @@ const styles = StyleSheet.create({
     fontSize: FONT_SIZE.xxl,
     fontWeight: 'bold',
     marginBottom: SPACING.md,
-    color: COLORS.text,
+    color: COLORS.textOnBase,
     textAlign: 'center',
   },
   description: {
@@ -223,7 +223,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   nextText: {
-    color: COLORS.background,
+    color: COLORS.textOnPrimary,
     fontSize: FONT_SIZE.md,
     fontWeight: '600',
   },

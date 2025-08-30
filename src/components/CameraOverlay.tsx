@@ -45,7 +45,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     width: 30,
     height: 30,
-    borderColor: COLORS.primary,
+    borderColor: COLORS.accent,
     borderWidth: 3,
   },
   topLeft: {
@@ -75,7 +75,7 @@ const styles = StyleSheet.create({
   instructions: {
     position: 'absolute',
     bottom: 100,
-    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    backgroundColor: 'rgba(121, 137, 148, 0.9)',
     padding: SPACING.md,
     borderRadius: 8,
     alignItems: 'center',
@@ -83,7 +83,7 @@ const styles = StyleSheet.create({
   },
   instructionText: {
     fontSize: FONT_SIZE.md,
-    color: COLORS.background,
+    color: COLORS.textOnPrimary,
     textAlign: 'center',
     marginBottom: SPACING.sm,
     fontWeight: '600',
@@ -93,7 +93,7 @@ const styles = StyleSheet.create({
   },
   tipText: {
     fontSize: FONT_SIZE.sm,
-    color: COLORS.background,
+    color: COLORS.textOnPrimary,
     textAlign: 'center',
     marginVertical: 2,
   },
