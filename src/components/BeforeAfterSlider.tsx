@@ -1,37 +1,67 @@
-import React, { useState } from 'react';
-import { View, Image, StyleSheet, Dimensions, PanResponder } from 'react-native';
+import React, { useState, useRef } from 'react';
+import { View, Image, StyleSheet, Dimensions, PanResponder, Text } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { COLORS } from '../config/constants';
+import { COLORS, FONT_SIZE } from '../config/constants';
 
 interface BeforeAfterSliderProps {
   beforeImage: any;
   afterImage: any;
+  initialPosition?: number;
+  width?: number;
+  height?: number;
 }
 
-const BeforeAfterSlider: React.FC<BeforeAfterSliderProps> = ({ beforeImage, afterImage }) => {
-  const screenWidth = Dimensions.get('window').width;
-  const [sliderPosition, setSliderPosition] = useState(screenWidth / 2);
+const BeforeAfterSlider: React.FC<BeforeAfterSliderProps> = ({ 
+  beforeImage, 
+  afterImage,
+  initialPosition = 50,
+  width: containerWidth,
+  height = 300
+}) => {
+  const screenWidth = containerWidth || Dimensions.get('window').width - 40;
+  const [sliderPosition, setSliderPosition] = useState((initialPosition / 100) * screenWidth);
+  const containerRef = useRef<View>(null);
 
   const panResponder = PanResponder.create({
     onStartShouldSetPanResponder: () => true,
     onMoveShouldSetPanResponder: () => true,
     onPanResponderMove: (_, gestureState) => {
-      const newPosition = Math.max(0, Math.min(screenWidth, gestureState.moveX));
+      let newPosition = Math.max(0, Math.min(screenWidth, gestureState.moveX));
+      const percentage = (newPosition / screenWidth) * 100;
+      
+      // Apply snapping at edges
+      if (percentage <= 10) {
+        newPosition = 0;
+      } else if (percentage >= 90) {
+        newPosition = screenWidth;
+      }
+      
       setSliderPosition(newPosition);
     },
   });
 
   return (
-    <View style={styles.container}>
-      <Image source={beforeImage} style={styles.fullImage} resizeMode="cover" />
-      <View style={[styles.afterImageContainer, { width: sliderPosition }]}>
-        <Image source={afterImage} style={styles.fullImage} resizeMode="cover" />
+    <View style={[styles.container, { width: screenWidth, height }]} ref={containerRef}>
+      {/* After Image (Background) */}
+      <Image source={afterImage} style={[styles.fullImage, { width: screenWidth, height }]} resizeMode="cover" />
+      
+      {/* Before Image (Overlay) */}
+      <View style={[styles.afterImageContainer, { width: sliderPosition, height }]}>
+        <Image source={beforeImage} style={[styles.fullImage, { width: screenWidth, height }]} resizeMode="cover" />
       </View>
+      
+      {/* Labels */}
+      <View style={styles.labelsContainer}>
+        <Text style={styles.labelBefore}>Before</Text>
+        <Text style={styles.labelAfter}>After</Text>
+      </View>
+      
+      {/* Slider Handle */}
       <View
         {...panResponder.panHandlers}
-        style={[styles.sliderHandle, { left: sliderPosition - 20 }]}
+        style={[styles.sliderHandle, { left: sliderPosition - 20, height }]}
       >
-        <View style={styles.sliderLine} />
+        <View style={[styles.sliderLine, { height }]} />
         <View style={styles.sliderButton}>
           <Ionicons name="code" size={20} color={COLORS.textOnAccent} />
         </View>
@@ -43,35 +73,57 @@ const BeforeAfterSlider: React.FC<BeforeAfterSliderProps> = ({ beforeImage, afte
 const styles = StyleSheet.create({
   container: {
     position: 'relative',
-    width: '100%',
-    height: 300,
     overflow: 'hidden',
+    borderRadius: 12,
   },
   fullImage: {
-    width: Dimensions.get('window').width,
-    height: '100%',
     position: 'absolute',
+    top: 0,
+    left: 0,
   },
   afterImageContainer: {
     position: 'absolute',
     top: 0,
     left: 0,
-    height: '100%',
     overflow: 'hidden',
+  },
+  labelsContainer: {
+    position: 'absolute',
+    top: 10,
+    left: 10,
+    right: 10,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  labelBefore: {
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    color: '#FFFFFF',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 4,
+    fontSize: FONT_SIZE.sm,
+    fontWeight: 'bold',
+  },
+  labelAfter: {
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    color: '#FFFFFF',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 4,
+    fontSize: FONT_SIZE.sm,
+    fontWeight: 'bold',
   },
   sliderHandle: {
     position: 'absolute',
     top: 0,
     width: 40,
-    height: '100%',
     alignItems: 'center',
     justifyContent: 'center',
   },
   sliderLine: {
     position: 'absolute',
     width: 2,
-    height: '100%',
-    backgroundColor: COLORS.base,
+    backgroundColor: '#FFFFFF',
   },
   sliderButton: {
     width: 40,

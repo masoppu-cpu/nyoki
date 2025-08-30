@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, ActivityIndicator } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { initMonitoring, track } from './src/lib/monitoring';
-import { OnboardingScreen } from './src/screens/OnboardingScreen';
+import { OnboardingScreenV2 } from './src/screens/OnboardingScreenV2';
 import { COLORS } from './src/config/constants';
 
 export default function App() {
@@ -38,7 +38,7 @@ export default function App() {
 
   // オンボーディング画面を表示
   if (showOnboarding) {
-    return <OnboardingScreen onComplete={() => setShowOnboarding(false)} />;
+    return <OnboardingScreenV2 onComplete={() => setShowOnboarding(false)} />;
   }
 
   // メインアプリを表示
