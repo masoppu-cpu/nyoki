@@ -2,347 +2,193 @@
 
 **タスクID**: FE-002  
 **担当**: Frontend  
-**推定時間**: 4時間  
+**推定時間**: 8時間  
 **依存関係**: [COMMON-002: 型定義]  
 **優先度**: 高（Phase 1）
 
 ## 概要
-初回起動時のオンボーディング画面を実装。アプリの使い方と価値を伝える。
+初回起動時のオンボーディング画面を実装。6画面構成でアプリの価値と使い方を伝える。
 
-## 実装項目（nyoki-pr調整済み）
+## nyoki オンボーディング仕様（6画面・アセット指定・B/Aスライダー・購入/ケアカード・AI相談）
+
+### 0. 全体方針
+
+**画面数**：6（1 スプラッシュ / 2 タグライン / 3 3ステップ / 4 購入 / 5 ケア / 6 最終CTA）
+
+**共通UI**：
+- 右上「スキップ」（どこからでもホームへ）
+- 左右スワイプ遷移
+- ドットインジケータで現在位置表示
+
+**背景アセット指定**：
+- 1, 2, 6：背景に `room-after-nordic` を全面使用
+
+**アクセシビリティ（共通）**：
+- 読み上げ順は上から論理的に
+- 押下要素の最小タップ領域 44pt相当
+- 画像には短い代替テキスト（例：「北欧調のリビング（植物あり）」）
+
+### 1. スプラッシュ
+
+- **内容**：中央にアプリ名 「nyoki」
+- **背景**：room-after-nordic
+- **遷移**：~1秒で自動的に 2 タグライン へ（またはスワイプ）
+
+### 2. タグライン
+
+- **見出し**：「写真一枚で\n理想の植物見つけよう」
+- **補足文**：「部屋の写真から相性の良い植物をAIが提案」
+- **背景**：room-after-nordic
+- **遷移**：スワイプ or 下部「Next」（任意）で 3 へ
+
+### 3. 3ステップ説明（③はBefore/After比較スライダー）
+
+**テキスト**：
+1. 部屋を撮影
+2. AIが植物を提案
+3. 配置イメージを確認
+
+**③の見せ方：Before/After比較スライダー**
+- **使用アセット**：Before = room-before-nordic / After = room-after-nordic
+- **表示**：同一位置で重ね、中央ハンドルを左右ドラッグで表示割合0–100%を切替
+- **初期値**：50%（半々）
+- **ラベル**：左上 Before／右上 After
+- **スナップ**：0–10%で0%へ、90–100%で100%へ軽く吸着
+- **ガイド文**：スライダー直下に「左右に動かして変化を確認」
+- **ジェスチャ衝突回避**：ハンドル操作中はページの横スワイプ無効。指を離すと復帰
+- **アクセシビリティ**：ハンドル＝スライダー（読み上げ例「配置イメージ比較、50パーセント」）
+- **遷移**：4 購入へ
+
+### 4. 機能紹介：購入（情報カード）
+
+**目的**：提案結果が比較しやすく、購入リストに追加できることを示す
+
+**情報カード（1枚）構成（左→右）**：
+- サムネ（植物の小画像）
+- テキストブロック：タイトル例「サンスベリア」／サブ例「脚付きプランターセット」
+- 右上：価格（例：¥5,980〜）
+- 属性バッジ列（最大3）：
+  - 育てやすさ（3段階表示＋ラベル「かんたん/ふつう/むずかしい」）
+  - ペットOK（ラベル必須。オンボではOK例で統一）
+  - 価格目安（例：目安：¥5,000〜）
+- 右端アクション：「購入リストに追加」（押すと一時的に「追加済み」表示）
+- **遷移**：5 ケアへ
+
+### 5. 機能紹介：ケア（2要素）
+
+画面内にA: ケア・タスクカード（コンパクト）とB: 植物カード（AI相談ボタン付）をこの順で縦に表示。
+
+#### A) ケア・タスクカード（コンパクト）
+**目的**：日々の管理を一目で想起させる
+
+**表示例**：「水やり　30分」
+
+**構成（左→右）**：
+- 左縦ライン（カテゴリー色の帯）
+- テキストブロック：タイトル 水やり（太字）＋30分（小さめ。並記でも右寄せでも可）
+- 円形アイコンバッジ（ジョウロ等）
+- 最右：完了トグル（空○／✓ 切替）
+- **ふるまい**：トグルで未完⇄完了／カード本体は軽い押下感のみ
+
+#### B) 植物カード（AI相談ボタン付き）
+**目的**：各植物からすぐ相談できる体験を提示
+
+**構成（左→右）**：
+- サムネ（小さめ鉢）
+- テキスト：タイトル例「モンステラ」＋補助1行（例「明るい日陰OK・週1目安」）
+- 右側：「AI相談」ボタン（小さなピル型）／隣に円形アイコンバッジ（任意）／最右トグル（任意）
+
+**AI相談ボタン押下時**：下からチャットシートを表示（80%高・背景暗転）
+- ヘッダー：AI相談／右上閉じる
+- メッセージ例（2往復・ダミー）
+  - ユーザー：「葉が黄色くなってきた」
+  - AI：「土の表面から3–4cmが乾いているか確認してみて。乾いていたら給水、湿っていれば数日控えるのが◎。置き場所は明るい日陰がベター。」
+- 入力欄：プレースホルダのみ（入力不可でOK）
+- クイックチップ：
+  - 「水やり頻度を知りたい」
+  - 「置き場所はどこがいい？」
+  - 「冬の管理のコツ」
+- モーダル操作中はページ横スワイプ無効。閉じるとフォーカスをAI相談ボタンへ戻す
+- **遷移**：6 最終CTAへ
+
+### 6. 最終CTA
+
+- **見出し**：「写真一枚で\n理想の植物見つけよう」（タグライン再掲）
+- **背景**：room-after-nordic
+- **ボタン**：「始める」（ホームへ）／「ログイン」（認証→完了後ホーム）
+
+## 遷移まとめ（矢印）
+
+1 スプラッシュ（bg=after）  
+→ 2 タグライン（bg=after）  
+→ 3 3ステップ（③は B/Aスライダー：before×after）  
+→ 4 購入（情報カード：育てやすさ・ペットOK・価格）  
+→ 5 ケア（タスクカード：水やり30分 ＋ 植物カード：AI相談→チャット）  
+→ 6 最終CTA（bg=after：始める/ログイン）  
+※ どの画面からでも右上スキップでホーム。
+
+## QAチェックリスト（受け入れ条件）
+
+- [ ] 1/2/6 の背景が room-after-nordic になっている
+- [ ] 3 の ③ が B/A比較スライダー（初期50%、端でスナップ、操作中はページスワイプ無効）
+- [ ] 4 に 情報カードが1枚あり、育てやすさ／ペットOK／価格が読める
+- [ ] 5-A に 「水やり 30分」のコンパクトタスクカードがあり、トグルが動く
+- [ ] 5-B に 植物カードがあり、AI相談ボタン押下でチャットシートが開き、サンプル会話が見える
+- [ ] すべての押下要素が44pt以上、読み上げ順が論理的
+- [ ] 横スワイプ・ドット・スキップの全体フローが維持されている
+
+## 実装TODO
 
 ### 基本構造
-- [x] src/screens/OnboardingScreen.tsx作成 ✅ 2025-01-29
-- [x] オンボーディングデータ（5枚のスライド）定義 ✅ 2025-01-29
-- [x] プレースホルダー画像の配置 ✅ 2025-01-29
+- [ ] src/screens/OnboardingScreenV2.tsx作成（6画面対応）
+- [ ] 各画面コンポーネントの実装
+- [ ] スワイプナビゲーションの実装
 
-### UI実装
-- [x] FlatListによるスライド式UI実装 ✅ 2025-01-29
-- [x] ドットインジケーター実装 ✅ 2025-01-29
-- [x] スキップボタン実装 ✅ 2025-01-29
-- [x] 次へ/始めるボタン実装 ✅ 2025-01-29
+### 画面別実装
+- [ ] 1. スプラッシュ画面（自動遷移）
+- [ ] 2. タグライン画面
+- [ ] 3. 3ステップ説明（B/Aスライダー含む）
+- [ ] 4. 購入情報カード
+- [ ] 5. ケア機能（タスクカード＋AI相談）
+- [ ] 6. 最終CTA画面
 
-### ナビゲーション制御
-- [x] AsyncStorageによる初回起動判定 ✅ 2025-01-29
-- [x] App.tsxでの条件分岐実装 ✅ 2025-01-29
-- [x] onCompleteコールバック処理 ✅ 2025-01-29
+### コンポーネント実装
+- [ ] BeforeAfterSlider改良（スナップ機能追加）
+- [ ] PlantInfoCard（購入カード）
+- [ ] CareTaskCard（ケアタスクカード）
+- [ ] PlantCareCard（AI相談付き植物カード）
+- [ ] AIChatModal（チャットシート）
 
-### スタイリング
-- [x] 各スライドのレイアウト設定 ✅ 2025-01-29
-- [x] ボタン・インジケーターのスタイル ✅ 2025-01-29
-- [x] 基本アニメーション実装 ✅ 2025-01-29
+### アクセシビリティ
+- [ ] 最小タップ領域44pt確保
+- [ ] VoiceOver対応
+- [ ] 代替テキスト設定
 
 ### 動作確認
-- [x] Expo Goでのスライド動作確認 ✅ 2025-01-29
-- [x] 初回起動フラグの動作確認 ✅ 2025-01-29
-- [x] 2回目起動時の非表示確認 ✅ 2025-01-29
+- [ ] Expo Goでの6画面遷移確認
+- [ ] AsyncStorageによる初回判定
+- [ ] スキップ機能の動作確認
 
-## 画面構成
+## 実装優先順位
 
-### スライド内容
-```typescript
-const onboardingSlides = [
-  {
-    id: '1',
-    title: 'お部屋を撮影',
-    description: 'スマホでお部屋を撮影するだけ',
-    image: require('../assets/images/onboarding-1.png'),
-    backgroundColor: '#E8F5E9'
-  },
-  {
-    id: '2',
-    title: 'AIが環境を分析',
-    description: '光量・温度・湿度を自動で判定',
-    image: require('../assets/images/onboarding-2.png'),
-    backgroundColor: '#F3E5F5'
-  },
-  {
-    id: '3',
-    title: '最適な植物をご提案',
-    description: 'あなたの部屋にぴったりの植物を',
-    image: require('../assets/images/onboarding-3.png'),
-    backgroundColor: '#E3F2FD'
-  },
-  {
-    id: '4',
-    title: '配置をプレビュー',
-    description: '購入前に部屋での見た目を確認',
-    image: require('../assets/images/onboarding-4.png'),
-    backgroundColor: '#FFF3E0'
-  },
-  {
-    id: '5',
-    title: '無料で始められます',
-    description: '5つまでの植物を無料で管理\nもっと楽しみたい方は月額480円',
-    image: require('../assets/images/onboarding-5.png'),
-    backgroundColor: '#E8F5E9'
-  }
-];
-```
+1. 基本的な6画面構造の実装
+2. B/Aスライダーの実装
+3. 購入カード・ケアカードの実装
+4. AI相談モーダルの実装
+5. アクセシビリティ対応
 
-## コンポーネント実装
+## 技術的考慮事項
 
-### OnboardingScreen.tsx
-```typescript
-// TODO: src/screens/OnboardingScreen.tsx
-import React, { useState, useRef } from 'react';
-import {
-  View,
-  Text,
-  Image,
-  TouchableOpacity,
-  FlatList,
-  Dimensions,
-  StyleSheet
-} from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-
-const { width } = Dimensions.get('window');
-
-export const OnboardingScreen = ({ onComplete }) => {
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const flatListRef = useRef<FlatList>(null);
-
-  const handleNext = () => {
-    if (currentIndex < onboardingSlides.length - 1) {
-      flatListRef.current?.scrollToIndex({
-        index: currentIndex + 1,
-        animated: true
-      });
-    } else {
-      completeOnboarding();
-    }
-  };
-
-  const handleSkip = () => {
-    completeOnboarding();
-  };
-
-  const completeOnboarding = async () => {
-    await AsyncStorage.setItem('hasSeenOnboarding', 'true');
-    onComplete();
-  };
-
-  const renderSlide = ({ item }) => (
-    <View style={[styles.slide, { width }]}>
-      <Image source={item.image} style={styles.image} />
-      <Text style={styles.title}>{item.title}</Text>
-      <Text style={styles.description}>{item.description}</Text>
-    </View>
-  );
-
-  return (
-    <View style={styles.container}>
-      <FlatList
-        ref={flatListRef}
-        data={onboardingSlides}
-        renderItem={renderSlide}
-        horizontal
-        pagingEnabled
-        showsHorizontalScrollIndicator={false}
-        onMomentumScrollEnd={(e) => {
-          const index = Math.round(e.nativeEvent.contentOffset.x / width);
-          setCurrentIndex(index);
-        }}
-      />
-      
-      <View style={styles.footer}>
-        <TouchableOpacity onPress={handleSkip}>
-          <Text style={styles.skipText}>スキップ</Text>
-        </TouchableOpacity>
-        
-        <View style={styles.dots}>
-          {onboardingSlides.map((_, index) => (
-            <View
-              key={index}
-              style={[
-                styles.dot,
-                currentIndex === index && styles.activeDot
-              ]}
-            />
-          ))}
-        </View>
-        
-        <TouchableOpacity onPress={handleNext} style={styles.nextButton}>
-          <Text style={styles.nextText}>
-            {currentIndex === onboardingSlides.length - 1 ? '始める' : '次へ'}
-          </Text>
-        </TouchableOpacity>
-      </View>
-    </View>
-  );
-};
-```
-
-## 初回起動判定
-
-### App.tsx での判定
-```typescript
-// TODO: App.tsx に追加
-const [showOnboarding, setShowOnboarding] = useState<boolean | null>(null);
-
-useEffect(() => {
-  checkOnboarding();
-}, []);
-
-const checkOnboarding = async () => {
-  const hasSeenOnboarding = await AsyncStorage.getItem('hasSeenOnboarding');
-  setShowOnboarding(hasSeenOnboarding !== 'true');
-};
-
-if (showOnboarding === null) {
-  return <LoadingScreen />;
-}
-
-if (showOnboarding) {
-  return <OnboardingScreen onComplete={() => setShowOnboarding(false)} />;
-}
-
-return <MainApp />;
-```
-
-## アニメーション
-
-### スライド切り替えアニメーション
-```typescript
-import { Animated } from 'react-native';
-
-// フェードイン・スケールアニメーション
-const animatedValue = useRef(new Animated.Value(0)).current;
-
-useEffect(() => {
-  Animated.timing(animatedValue, {
-    toValue: 1,
-    duration: 500,
-    useNativeDriver: true
-  }).start();
-}, [currentIndex]);
-```
-
-## スタイル
-
-```typescript
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#FFFFFF'
-  },
-  slide: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 40
-  },
-  image: {
-    width: 250,
-    height: 250,
-    marginBottom: 40
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 16,
-    color: '#2D3748'
-  },
-  description: {
-    fontSize: 16,
-    textAlign: 'center',
-    color: '#718096'
-  },
-  footer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingVertical: 20
-  },
-  dots: {
-    flexDirection: 'row'
-  },
-  dot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: '#CBD5E0',
-    marginHorizontal: 4
-  },
-  activeDot: {
-    backgroundColor: '#48BB78',
-    width: 20
-  },
-  nextButton: {
-    backgroundColor: '#48BB78',
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    borderRadius: 8
-  },
-  nextText: {
-    color: '#FFFFFF',
-    fontWeight: '600'
-  },
-  skipText: {
-    color: '#718096'
-  }
-});
-```
-
-## Expo Goでの動作確認手順
-
-```bash
-# 1. 開発サーバー起動
-npm start
-
-# 2. Expo Goアプリでスキャン
-# iOS: カメラアプリでQRコード読み取り
-# Android: Expo GoアプリでQRコードスキャン
-
-# 3. 確認項目
-- [ ] オンボーディング画面が表示される
-- [ ] スワイプで画面遷移できる
-- [ ] スキップボタンが動作する
-- [ ] 完了後、ホーム画面に遷移する
-- [ ] 2回目起動時はオンボーディングが表示されない
-```
-
-## 完了条件
-- [x] 5枚のスライド実装（フリーミアム案内含む） ✅ 2025-01-29
-- [x] スワイプ操作対応 ✅ 2025-01-29
-- [x] ドットインジケーター実装 ✅ 2025-01-29
-- [x] スキップ・次へボタン実装 ✅ 2025-01-29
-- [x] 初回起動判定実装 ✅ 2025-01-29
-- [x] アニメーション実装 ✅ 2025-01-29
-- [x] Expo Goでの動作確認完了 ✅ 2025-01-29
-
-## 備考
-- 画像アセットは後で追加
-- アクセシビリティ対応も考慮
-- 国際化対応の準備
+- React Native FlatListで横スクロール実装
+- PanResponderでB/Aスライダーのジェスチャー制御
+- Modalコンポーネントでチャットシート実装
+- AsyncStorageで初回起動フラグ管理
+- 画像はrequire()での静的インポート
 
 ## 関連ファイル
-- `src/screens/OnboardingScreen.tsx` - オンボーディング画面（要作成）
-- `assets/images/onboarding-*.png` - オンボーディング画像（要作成）
+- `src/screens/OnboardingScreenV2.tsx` - 新オンボーディング画面（要作成）
+- `src/components/BeforeAfterSlider.tsx` - B/Aスライダー（要改良）
+- `assets/images/room-before-nordic.jpg` - Before画像（要追加）
+- `assets/images/room-after-nordic.jpg` - After画像（既存）
 
-最終更新: 2025-08-28
-
-## Auto-PR（Claude用）
-
-目的:
-- オンボーディング画面の最小実装を追加しPR作成
-
-ブランチ:
-- feat/<TICKET-ID>-onboarding
-
-コミット規約:
-- [<TICKET-ID>] で始める
-
-動作確認（最低限）:
-- [ ] 5枚スライドが動作
-- [ ] 初回起動判定が機能
-
-実行手順（Claude）:
-```bash
-git switch -c feat/<TICKET-ID>-onboarding
-git add -A && git commit -m "[<TICKET-ID}] add onboarding slides"
-git push -u origin feat/<TICKET-ID>-onboarding
-gh pr create --fill --base main --head feat/<TICKET-ID>-onboarding
-```
+最終更新: 2025-08-30

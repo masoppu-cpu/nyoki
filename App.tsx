@@ -17,11 +17,13 @@ export default function App() {
 
   const checkOnboarding = async () => {
     try {
+      // デバッグ: AsyncStorageをクリアしてオンボーディングを強制表示
+      await AsyncStorage.removeItem('hasSeenOnboarding');
       const hasSeenOnboarding = await AsyncStorage.getItem('hasSeenOnboarding');
       setShowOnboarding(hasSeenOnboarding !== 'true');
     } catch (error) {
       console.error('Error checking onboarding status:', error);
-      setShowOnboarding(false);
+      setShowOnboarding(true); // エラー時もオンボーディングを表示
     }
   };
 
