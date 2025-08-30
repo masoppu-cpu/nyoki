@@ -21,6 +21,7 @@
     "@supabase/supabase-js": "^2.38.0",
     "expo": "~51.0.28",
     "expo-camera": "~15.0.16",
+    "expo-image-manipulator": "^13.1.7",
     "expo-image-picker": "~15.1.0",
     "expo-linear-gradient": "~13.0.2",
     "expo-status-bar": "~1.12.1",
