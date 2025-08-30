@@ -33,9 +33,6 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onComplete }
   const [currentIndex, setCurrentIndex] = useState(0);
   const flatListRef = useRef<FlatList>(null);
   const [scrollEnabled, setScrollEnabled] = useState(true);
-  const [waterDone, setWaterDone] = useState(false);
-  const [chatOpen, setChatOpen] = useState(false);
-  const [purchaseAdded, setPurchaseAdded] = useState(false);
 
   // Splash animation controls
   const [blurLevel, setBlurLevel] = useState(15);
@@ -319,24 +316,58 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onComplete }
   };
 
   // 画面3: 購入リスト機能
-  const Page3 = () => {
+  const Page3: React.FC<{ isActive: boolean }> = ({ isActive }) => {
     const addScale = useRef(new Animated.Value(1)).current;
+    const [localPurchaseAdded, setLocalPurchaseAdded] = useState(false);
     
-    const handleAdd = () => {
-      setPurchaseAdded(true);
-      Animated.sequence([
-        Animated.timing(addScale, {
-          toValue: 0.95,
-          duration: 100,
-          useNativeDriver: true,
-        }),
-        Animated.spring(addScale, {
-          toValue: 1,
-          useNativeDriver: true,
-        }),
-      ]).start();
-      setTimeout(() => setPurchaseAdded(false), 2000);
-    };
+    // 自動でボタンを押すアニメーション
+    useEffect(() => {
+      if (isActive) {
+        const timer = setTimeout(() => {
+          // ボタンを押す演出
+          setLocalPurchaseAdded(true);
+          Animated.sequence([
+            Animated.timing(addScale, {
+              toValue: 0.9,
+              duration: 150,
+              useNativeDriver: true,
+            }),
+            Animated.spring(addScale, {
+              toValue: 1,
+              friction: 3,
+              useNativeDriver: true,
+            }),
+          ]).start();
+          
+          // 2秒後に元に戻す
+          setTimeout(() => {
+            setLocalPurchaseAdded(false);
+            // 3秒後にまた繰り返す
+            setTimeout(() => {
+              if (isActive) {
+                setLocalPurchaseAdded(true);
+                Animated.sequence([
+                  Animated.timing(addScale, {
+                    toValue: 0.9,
+                    duration: 150,
+                    useNativeDriver: true,
+                  }),
+                  Animated.spring(addScale, {
+                    toValue: 1,
+                    friction: 3,
+                    useNativeDriver: true,
+                  }),
+                ]).start();
+              }
+            }, 3000);
+          }, 2000);
+        }, 1500); // 画面表示から1.5秒後に開始
+        
+        return () => clearTimeout(timer);
+      } else {
+        setLocalPurchaseAdded(false);
+      }
+    }, [isActive]);
 
     return (
       <View style={[styles.slide, { width, paddingTop: 60 }]} accessibilityLabel="購入リストで簡単管理">
@@ -379,9 +410,8 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onComplete }
                 <Text style={styles.tagText}>予算内</Text>
               </View>
             </View>
-            <TouchableOpacity
-              onPress={handleAdd}
-              style={[styles.addButton, purchaseAdded && styles.addButtonDone]}
+            <View
+              style={[styles.addButton, localPurchaseAdded && styles.addButtonDone]}
               accessibilityLabel="購入リストに追加"
             >
               <Animated.View
@@ -392,20 +422,20 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onComplete }
                 }}
               >
                 <Ionicons
-                  name={purchaseAdded ? 'checkmark' : 'add'}
+                  name={localPurchaseAdded ? 'checkmark' : 'add'}
                   size={18}
-                  color={purchaseAdded ? COLORS.primary : COLORS.textOnPrimary}
+                  color={localPurchaseAdded ? COLORS.primary : COLORS.textOnPrimary}
                 />
                 <Text
                   style={[
                     styles.addButtonText,
-                    purchaseAdded && { color: COLORS.primary },
+                    localPurchaseAdded && { color: COLORS.primary },
                   ]}
                 >
-                  {purchaseAdded ? '追加済み' : '購入リストに追加'}
+                  {localPurchaseAdded ? '追加済み' : '購入リストに追加'}
                 </Text>
               </Animated.View>
-            </TouchableOpacity>
+            </View>
           </View>
         </View>
       </View>
@@ -414,22 +444,74 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onComplete }
 
 
   // 画面4: 購入後のサポート機能
-  const Page4 = () => {
+  const Page4: React.FC<{ isActive: boolean }> = ({ isActive }) => {
     const waterScale = useRef(new Animated.Value(1)).current;
-    const toggleWater = () => {
-      setWaterDone(!waterDone);
-      Animated.sequence([
-        Animated.timing(waterScale, {
-          toValue: 1.2,
-          duration: 150,
-          useNativeDriver: true,
-        }),
-        Animated.spring(waterScale, {
-          toValue: 1,
-          useNativeDriver: true,
-        }),
-      ]).start();
-    };
+    const [localWaterDone, setLocalWaterDone] = useState(false);
+    const [localChatOpen, setLocalChatOpen] = useState(false);
+    
+    // 自動アニメーション
+    useEffect(() => {
+      if (isActive) {
+        // 1. 水やりボタンを自動でタップ
+        const waterTimer = setTimeout(() => {
+          setLocalWaterDone(true);
+          Animated.sequence([
+            Animated.timing(waterScale, {
+              toValue: 1.3,
+              duration: 200,
+              useNativeDriver: true,
+            }),
+            Animated.spring(waterScale, {
+              toValue: 1,
+              friction: 3,
+              useNativeDriver: true,
+            }),
+          ]).start();
+        }, 1500);
+        
+        // 2. AI相談モーダルを自動で開く
+        const chatTimer = setTimeout(() => {
+          setLocalChatOpen(true);
+          setScrollEnabled(false);
+          
+          // 3秒後に自動で閉じる
+          setTimeout(() => {
+            setLocalChatOpen(false);
+            setScrollEnabled(true);
+            
+            // 水やりボタンをリセット
+            setLocalWaterDone(false);
+            
+            // 3秒後にまたサイクルを繰り返す
+            setTimeout(() => {
+              if (isActive) {
+                setLocalWaterDone(true);
+                Animated.sequence([
+                  Animated.timing(waterScale, {
+                    toValue: 1.3,
+                    duration: 200,
+                    useNativeDriver: true,
+                  }),
+                  Animated.spring(waterScale, {
+                    toValue: 1,
+                    friction: 3,
+                    useNativeDriver: true,
+                  }),
+                ]).start();
+              }
+            }, 3000);
+          }, 3000);
+        }, 3500);
+        
+        return () => {
+          clearTimeout(waterTimer);
+          clearTimeout(chatTimer);
+        };
+      } else {
+        setLocalWaterDone(false);
+        setLocalChatOpen(false);
+      }
+    }, [isActive]);
 
     return (
       <ScrollView
@@ -454,15 +536,13 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onComplete }
               <Text style={styles.careTitle}>モンステラ</Text>
               <Text style={styles.careSub}>水やり</Text>
             </View>
-            <TouchableOpacity onPress={toggleWater} accessibilityLabel="水やり完了">
-              <Animated.View style={{ transform: [{ scale: waterScale }] }}>
-                <Ionicons
-                  name={waterDone ? 'checkmark-circle' : 'water-outline'}
-                  size={32}
-                  color={waterDone ? COLORS.primary : COLORS.textSecondary}
-                />
-              </Animated.View>
-            </TouchableOpacity>
+            <Animated.View style={{ transform: [{ scale: waterScale }] }}>
+              <Ionicons
+                name={localWaterDone ? 'checkmark-circle' : 'water-outline'}
+                size={32}
+                color={localWaterDone ? COLORS.primary : COLORS.textSecondary}
+              />
+            </Animated.View>
           </View>
         </View>
 
@@ -471,24 +551,20 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onComplete }
           <Text style={[styles.sectionSub, { marginBottom: 12 }]}>
             植物の調子が気になったら
           </Text>
-          <TouchableOpacity
+          <View
             style={styles.aiConsultButton}
-            onPress={() => {
-              setChatOpen(true);
-              setScrollEnabled(false);
-            }}
             accessibilityLabel="AI相談"
           >
             <Text style={styles.aiConsultButtonText}>AI相談</Text>
-          </TouchableOpacity>
+          </View>
         </View>
 
         <Modal
-          visible={chatOpen}
+          visible={localChatOpen}
           animationType="slide"
           transparent
           onRequestClose={() => {
-            setChatOpen(false);
+            setLocalChatOpen(false);
             setScrollEnabled(true);
           }}
         >
@@ -498,7 +574,7 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onComplete }
                 <Text style={styles.modalTitle}>AI植物相談</Text>
                 <TouchableOpacity
                   onPress={() => {
-                    setChatOpen(false);
+                    setLocalChatOpen(false);
                     setScrollEnabled(true);
                   }}
                 >
@@ -572,9 +648,9 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onComplete }
       case 1:
         return <Page2 isActive={currentIndex === 1} />;
       case 2:
-        return <Page3 />;
+        return <Page3 isActive={currentIndex === 2} />;
       case 3:
-        return <Page4 />;
+        return <Page4 isActive={currentIndex === 3} />;
       case 4:
         return <Page5 />;
       default:
