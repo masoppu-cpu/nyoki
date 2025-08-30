@@ -14,12 +14,12 @@
 - [×] アフィリエイトリンクの作成方法を確認
 
 #### Amazonアソシエイト
-- [ ] [Amazonアソシエイト](https://affiliate.amazon.co.jp/)に申請
-- [ ] サイト情報を登録（アプリとして登録）
-- [ ] 審査完了を待つ（3〜7日）
-- [ ] Product Advertising APIの利用申請
+- [×] [Amazonアソシエイト](https://affiliate.amazon.co.jp/)に申請
+- [×] サイト情報を登録（アプリとして登録）
+- [×] 審査完了を待つ（3〜7日）
+- [ ] Product Advertising APIの利用申請(りっきーまち)
 
-#### その他の選択肢
+#### その他の選択肢　これらは保留
 - [ ] [A8.net](https://www.a8.net/) - 園芸店案件
 - [ ] [ValueCommerce](https://www.valuecommerce.ne.jp/) - ホームセンター案件
 - [ ] 直接提携 - 地域の植物店に問い合わせ

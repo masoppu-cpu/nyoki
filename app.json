@@ -48,7 +48,8 @@
         {
           "photosPermission": "お部屋の写真を選択して、最適な植物をご提案します"
         }
-      ]
+      ],
+      "expo-font"
     ],
     "scheme": "nyoki",
     "updates": {
