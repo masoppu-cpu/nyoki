@@ -1,40 +1,92 @@
-import React, { useState } from 'react';
-import { View, Image, StyleSheet, Dimensions, PanResponder } from 'react-native';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { View, Image, StyleSheet, Dimensions, PanResponder, Text, Animated, Easing } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { COLORS } from '../config/constants';
 
 interface BeforeAfterSliderProps {
   beforeImage: any;
   afterImage: any;
+  initialPercent?: number; // 0..1
+  onInteractionStart?: () => void;
+  onInteractionEnd?: () => void;
+  autoAnimate?: { from: number; to: number; duration?: number; delay?: number };
 }
 
-const BeforeAfterSlider: React.FC<BeforeAfterSliderProps> = ({ beforeImage, afterImage }) => {
+const BeforeAfterSlider: React.FC<BeforeAfterSliderProps> = ({
+  beforeImage,
+  afterImage,
+  initialPercent = 0.5,
+  onInteractionStart,
+  onInteractionEnd,
+  autoAnimate,
+}) => {
   const screenWidth = Dimensions.get('window').width;
-  const [sliderPosition, setSliderPosition] = useState(screenWidth / 2);
+  const initialPos = useMemo(() => Math.max(0, Math.min(1, initialPercent)) * screenWidth, [initialPercent, screenWidth]);
+  const [sliderPosition, setSliderPosition] = useState(initialPos);
+  const sliderAnim = useRef(new Animated.Value(initialPos)).current;
 
   const panResponder = PanResponder.create({
     onStartShouldSetPanResponder: () => true,
     onMoveShouldSetPanResponder: () => true,
+    onPanResponderGrant: () => {
+      onInteractionStart?.();
+    },
     onPanResponderMove: (_, gestureState) => {
       const newPosition = Math.max(0, Math.min(screenWidth, gestureState.moveX));
       setSliderPosition(newPosition);
+      sliderAnim.setValue(newPosition);
+    },
+    onPanResponderRelease: () => {
+      // snap to edges for 0-10% and 90-100%
+      const ratio = sliderPosition / screenWidth;
+      if (ratio <= 0.1) {
+        Animated.timing(sliderAnim, { toValue: 0, duration: 160, useNativeDriver: false }).start(() => setSliderPosition(0));
+      } else if (ratio >= 0.9) {
+        Animated.timing(sliderAnim, { toValue: screenWidth, duration: 160, useNativeDriver: false }).start(() => setSliderPosition(screenWidth));
+      }
+      onInteractionEnd?.();
     },
   });
 
+  // Auto-animate from -> to when requested
+  useEffect(() => {
+    if (!autoAnimate) return;
+    const fromPos = Math.max(0, Math.min(1, autoAnimate.from)) * screenWidth;
+    const toPos = Math.max(0, Math.min(1, autoAnimate.to)) * screenWidth;
+    sliderAnim.setValue(fromPos);
+    setSliderPosition(fromPos);
+    const t = setTimeout(() => {
+      Animated.timing(sliderAnim, {
+        toValue: toPos,
+        duration: autoAnimate.duration ?? 1600,
+        easing: Easing.inOut(Easing.ease),
+        useNativeDriver: false,
+      }).start(() => setSliderPosition(toPos));
+    }, autoAnimate.delay ?? 0);
+    return () => clearTimeout(t);
+  }, [screenWidth, autoAnimate?.from, autoAnimate?.to, autoAnimate?.duration, autoAnimate?.delay]);
+
   return (
     <View style={styles.container}>
-      <Image source={beforeImage} style={styles.fullImage} resizeMode="cover" />
-      <View style={[styles.afterImageContainer, { width: sliderPosition }]}>
-        <Image source={afterImage} style={styles.fullImage} resizeMode="cover" />
-      </View>
+      {/* Show AFTER on the right: use it as the background */}
+      <Image source={afterImage} style={styles.fullImage} resizeMode="cover" />
+      {/* Show BEFORE on the left: clip to slider position */}
+      <Animated.View style={[styles.afterImageContainer, { width: sliderAnim }]}>
+        <Image source={beforeImage} style={styles.fullImage} resizeMode="cover" />
+      </Animated.View>
+      <Text style={[styles.label, styles.beforeLabel]}>Before</Text>
+      <Text style={[styles.label, styles.afterLabel]}>After</Text>
       <View
         {...panResponder.panHandlers}
-        style={[styles.sliderHandle, { left: sliderPosition - 20 }]}
+        style={[styles.sliderHandle, { left: (sliderPosition as number) - 20 }]}
       >
         <View style={styles.sliderLine} />
         <View style={styles.sliderButton}>
           <Ionicons name="code" size={20} color={COLORS.textOnAccent} />
         </View>
+      </View>
+      <View style={styles.guideContainer}>
+        <Text style={styles.guideText}>左右に動かして変化を確認</Text>
       </View>
     </View>
   );
@@ -58,6 +110,22 @@ const styles = StyleSheet.create({
     left: 0,
     height: '100%',
     overflow: 'hidden',
+  },
+  label: {
+    position: 'absolute',
+    top: 8,
+    fontSize: 12,
+    color: '#fff',
+    backgroundColor: 'rgba(0,0,0,0.35)',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 6,
+  },
+  beforeLabel: {
+    left: 8,
+  },
+  afterLabel: {
+    right: 8,
   },
   sliderHandle: {
     position: 'absolute',
@@ -88,6 +156,21 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 4,
     elevation: 5,
+  },
+  guideContainer: {
+    position: 'absolute',
+    bottom: 8,
+    left: 0,
+    right: 0,
+    alignItems: 'center',
+  },
+  guideText: {
+    fontSize: 12,
+    color: '#fff',
+    backgroundColor: 'rgba(0,0,0,0.35)',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 6,
   },
 });
 
