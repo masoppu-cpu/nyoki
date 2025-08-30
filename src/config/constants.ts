@@ -13,17 +13,25 @@ export const SUBSCRIPTION = {
 } as const;
 
 export const COLORS = {
-  primary: '#48BB78',
-  secondary: '#4299E1',
-  background: '#FFFFFF',
-  surface: '#F7FAFC',
-  text: '#2D3748',
-  textSecondary: '#718096',
-  border: '#E2E8F0',
-  inactive: '#CBD5E0',
-  error: '#FC8181',
-  warning: '#F6E05E',
-  success: '#48BB78',
+  // 新しいカラーパレット
+  base: '#efe9dc',          // ベースカラー（背景）
+  primary: '#798994',       // メインカラー
+  accent: '#9ea48d',        // アクセントカラー
+  textOnBase: '#787d76',    // ベースカラー上のテキスト
+  textOnPrimary: '#ffffff', // メインカラー上のテキスト
+  textOnAccent: '#ffffff',  // アクセントカラー上のテキスト
+  
+  // 旧カラー（互換性のため一時的に残す）
+  secondary: '#9ea48d',     // アクセントカラーと同じ
+  background: '#efe9dc',    // ベースカラーと同じ
+  surface: '#f5f1e8',       // ベースカラーの明るいバリエーション
+  text: '#787d76',          // textOnBaseと同じ
+  textSecondary: '#9b9f98', // 少し薄いテキスト
+  border: '#d4cfc2',        // ベースカラーの暗いバリエーション
+  inactive: '#c5bfb0',      // 非アクティブ要素
+  error: '#d67373',         // エラー（調整済み）
+  warning: '#e5b76f',       // 警告（調整済み）
+  success: '#9ea48d',       // 成功（アクセントカラーと同じ）
 } as const;
 
 export const SPACING = {
