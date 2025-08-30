@@ -40,10 +40,13 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onComplete }
   // Splash animation controls
   const [blurLevel, setBlurLevel] = useState(15);
   const [splashComplete, setSplashComplete] = useState(false);
+  const [showContent, setShowContent] = useState(false);
+  const [canTap, setCanTap] = useState(false);
   const grayOverlay = useRef(new Animated.Value(1)).current; // グレーオーバーレイ
   const logoOpacity = useRef(new Animated.Value(0)).current; // ロゴの不透明度
   const logoBlur = useRef(new Animated.Value(1)).current; // ロゴのブラー
   const contentOpacity = useRef(new Animated.Value(0)).current; // コンテンツの不透明度
+  const tapHintOpacity = useRef(new Animated.Value(0)).current; // タップヒントの不透明度
 
   // スプラッシュアニメーション（初回のみ）
   useEffect(() => {
@@ -80,22 +83,48 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onComplete }
           setBlurLevel(level);
           if (level === 0) {
             clearInterval(blurInterval);
-            // 3. コンテンツをフェードイン
+            setSplashComplete(true);
+            setCanTap(true);
+            // タップヒントを表示
             setTimeout(() => {
-              Animated.timing(contentOpacity, {
-                toValue: 1,
-                duration: 600,
-                easing: Easing.out(Easing.ease),
-                useNativeDriver: true,
-              }).start(() => {
-                setSplashComplete(true);
-              });
-            }, 400);
+              Animated.loop(
+                Animated.sequence([
+                  Animated.timing(tapHintOpacity, {
+                    toValue: 1,
+                    duration: 1000,
+                    useNativeDriver: true,
+                  }),
+                  Animated.timing(tapHintOpacity, {
+                    toValue: 0.3,
+                    duration: 1000,
+                    useNativeDriver: true,
+                  }),
+                ])
+              ).start();
+            }, 500);
           }
         }, 100);
       }, 800);
     }
   }, [currentIndex, splashComplete]);
+
+  // タップハンドラー
+  const handleSplashTap = () => {
+    if (canTap && !showContent) {
+      setShowContent(true);
+      Animated.timing(tapHintOpacity, {
+        toValue: 0,
+        duration: 200,
+        useNativeDriver: true,
+      }).start();
+      Animated.timing(contentOpacity, {
+        toValue: 1,
+        duration: 600,
+        easing: Easing.out(Easing.ease),
+        useNativeDriver: true,
+      }).start();
+    }
+  };
 
   const handleNext = () => {
     if (currentIndex < PAGES - 1) {
@@ -119,34 +148,53 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onComplete }
 
   // 画面1: スプラッシュ→コアバリュー提示
   const Page1 = () => (
-    <ImageBackground
-      source={require('../../assets/images/room-after-nordic.jpg')}
-      style={[styles.slideBg, { width }]}
-      imageStyle={styles.bgImage}
-      blurRadius={blurLevel}
-      accessibilityLabel="おしゃれなリビングルーム"
+    <TouchableOpacity
+      style={{ width }}
+      activeOpacity={1}
+      onPress={handleSplashTap}
+      disabled={!canTap}
     >
-      <Animated.View style={[styles.grayOverlay, { opacity: grayOverlay }]} />
-      <View style={styles.dimOverlay} />
-      <View style={styles.centerContent}>
-        {!splashComplete ? (
-          <Animated.View
-            style={{
-              opacity: logoOpacity,
-              transform: [{ scale: logoBlur }],
-            }}
-          >
-            <Text style={styles.logoTextWhite}>nyoki</Text>
-          </Animated.View>
-        ) : (
-          <Animated.View style={{ opacity: contentOpacity, alignItems: 'center' }}>
-            <Text style={styles.h1White}>写真一枚で</Text>
-            <Text style={styles.h2White}>理想の植物を見つけよう</Text>
-            <Text style={[styles.subWhite, { marginTop: 8 }]}>部屋の写真から相性の良い植物をAIが提案</Text>
-          </Animated.View>
-        )}
-      </View>
-    </ImageBackground>
+      <ImageBackground
+        source={require('../../assets/images/room-after-nordic.jpg')}
+        style={[styles.slideBg, { width }]}
+        imageStyle={styles.bgImage}
+        blurRadius={blurLevel}
+        accessibilityLabel="おしゃれなリビングルーム"
+      >
+        <Animated.View style={[styles.grayOverlay, { opacity: grayOverlay }]} />
+        <View style={styles.dimOverlay} />
+        <View style={styles.centerContent}>
+          {!showContent ? (
+            <>
+              <Animated.View
+                style={{
+                  opacity: logoOpacity,
+                  transform: [{ scale: logoBlur }],
+                }}
+              >
+                <Text style={styles.logoTextWhite}>nyoki</Text>
+              </Animated.View>
+              {splashComplete && (
+                <Animated.Text
+                  style={[
+                    styles.tapHint,
+                    { opacity: tapHintOpacity },
+                  ]}
+                >
+                  タップして始める
+                </Animated.Text>
+              )}
+            </>
+          ) : (
+            <Animated.View style={{ opacity: contentOpacity, alignItems: 'center' }}>
+              <Text style={styles.h1White}>写真一枚で</Text>
+              <Text style={styles.h2White}>理想の植物を見つけよう</Text>
+              <Text style={[styles.subWhite, { marginTop: 8 }]}>部屋の写真から相性の良い植物をAIが提案</Text>
+            </Animated.View>
+          )}
+        </View>
+      </ImageBackground>
+    </TouchableOpacity>
   );
 
   // 画面2: かんたん3ステップ
@@ -981,6 +1029,13 @@ const styles = StyleSheet.create({
   tipText: {
     color: COLORS.textSecondary,
     fontSize: 13,
+  },
+  tapHint: {
+    position: 'absolute',
+    bottom: -60,
+    fontSize: 16,
+    color: '#FFFFFF',
+    fontWeight: '500',
   },
   // CTAボタン
   primaryCta: {
