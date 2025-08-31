@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ActivityIndicator, TouchableOpacity, Alert } from 'react-native';
-import { StatusBar } from 'expo-status-bar';
+import { View, StyleSheet, ActivityIndicator } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { initMonitoring, track } from './src/lib/monitoring';
 import { OnboardingScreen } from './src/screens/OnboardingScreen';
+import MainScreen from './src/screens/MainScreen';
 import { COLORS } from './src/config/constants';
 // カメラテスト用のインポート（テスト時のみ有効化）
 import TestApp from './TestApp';
@@ -48,27 +48,8 @@ export default function App() {
     return <OnboardingScreen onComplete={() => setShowOnboarding(false)} />;
   }
 
-  // メインアプリを表示
-  return (
-    <View style={styles.container}>
-      <TouchableOpacity
-        onLongPress={async () => {
-          try {
-            await AsyncStorage.removeItem('hasSeenOnboarding');
-            setShowOnboarding(true);
-            Alert.alert('Onboardingをリセットしました');
-          } catch (e) {
-            console.warn('Failed to reset onboarding flag', e);
-          }
-        }}
-        accessibilityLabel="タイトル（長押しでオンボーディングをリセット）"
-      >
-        <Text style={styles.title}>nyoki - Plant Placement App</Text>
-      </TouchableOpacity>
-      <Text style={styles.subtitle}>AI-powered room visualization for plant lovers</Text>
-      <StatusBar style="auto" />
-    </View>
-  );
+  // メインアプリを表示（タブナビゲーション付き）
+  return <MainScreen />;
 }
 
 const styles = StyleSheet.create({
@@ -80,15 +61,5 @@ const styles = StyleSheet.create({
   },
   loadingContainer: {
     backgroundColor: COLORS.base,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: COLORS.textOnBase,
-    marginBottom: 8,
-  },
-  subtitle: {
-    fontSize: 16,
-    color: COLORS.textSecondary,
   },
 });

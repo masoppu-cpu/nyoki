@@ -1,8 +1,10 @@
 import React from 'react';
-import { View, Text, Image, TouchableOpacity, ScrollView, StyleSheet } from 'react-native';
+import { View, Text, Image, TouchableOpacity, ScrollView, StyleSheet, ImageBackground, Dimensions } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { COLORS, FONT_SIZE, SPACING, BORDER_RADIUS } from '../config/constants';
+
+const { width } = Dimensions.get('window');
 
 interface HomeScreenProps {
   onNavigate: (screen: string) => void;
@@ -10,23 +12,29 @@ interface HomeScreenProps {
 
 const HomeScreen: React.FC<HomeScreenProps> = ({ onNavigate }) => {
   return (
-    <ScrollView style={styles.container}>
-      <LinearGradient
-        colors={['#48BB78', '#38A169']}
+    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+      <ImageBackground
+        source={require('../../assets/images/onbording/roomAfterNordic-optimized.jpg')}
         style={styles.hero}
+        resizeMode="cover"
       >
-        <Text style={styles.heroTitle}>あなたの部屋に{'\n'}緑の癒しを</Text>
-        <Text style={styles.heroSubtitle}>
-          AIが最適な植物をご提案
-        </Text>
-        <TouchableOpacity 
-          style={styles.ctaButton}
-          onPress={() => onNavigate('capture')}
+        <LinearGradient
+          colors={['rgba(0,0,0,0.3)', 'rgba(0,0,0,0.5)']}
+          style={styles.heroOverlay}
         >
-          <Ionicons name="camera" size={24} color={COLORS.background} />
-          <Text style={styles.ctaButtonText}>部屋を撮影して始める</Text>
-        </TouchableOpacity>
-      </LinearGradient>
+          <Text style={styles.heroTitle}>あなたの部屋に{'\n'}緑の癒しを</Text>
+          <Text style={styles.heroSubtitle}>
+            AIが最適な植物をご提案
+          </Text>
+          <TouchableOpacity 
+            style={styles.ctaButton}
+            onPress={() => onNavigate('capture')}
+          >
+            <Ionicons name="camera" size={24} color={COLORS.background} />
+            <Text style={styles.ctaButtonText}>部屋を撮影して始める</Text>
+          </TouchableOpacity>
+        </LinearGradient>
+      </ImageBackground>
 
       <View style={styles.features}>
         <Text style={styles.sectionTitle}>3つのステップで簡単</Text>
@@ -108,21 +116,32 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.background,
   },
   hero: {
+    width: width,
+    height: 280,
+  },
+  heroOverlay: {
+    flex: 1,
     padding: SPACING.xl,
     paddingTop: 60,
     paddingBottom: 40,
+    justifyContent: 'center',
   },
   heroTitle: {
-    fontSize: FONT_SIZE.xxxl,
+    fontSize: 32,
     fontWeight: 'bold',
-    color: COLORS.background,
+    color: '#FFFFFF',
     marginBottom: SPACING.sm,
+    textShadowColor: 'rgba(0, 0, 0, 0.75)',
+    textShadowOffset: { width: 0, height: 2 },
+    textShadowRadius: 4,
   },
   heroSubtitle: {
     fontSize: FONT_SIZE.lg,
-    color: COLORS.background,
-    opacity: 0.9,
+    color: '#FFFFFF',
     marginBottom: SPACING.lg,
+    textShadowColor: 'rgba(0, 0, 0, 0.75)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 3,
   },
   ctaButton: {
     flexDirection: 'row',
