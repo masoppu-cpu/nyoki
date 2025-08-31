@@ -35,76 +35,39 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onComplete }
   const [scrollEnabled, setScrollEnabled] = useState(true);
 
   // Splash animation controls
-  const [blurLevel, setBlurLevel] = useState(15);
-  const [splashComplete, setSplashComplete] = useState(false);
   const [showContent, setShowContent] = useState(false);
   const [canTap, setCanTap] = useState(false);
-  const grayOverlay = useRef(new Animated.Value(1)).current; // グレーオーバーレイ
   const logoOpacity = useRef(new Animated.Value(0)).current; // ロゴの不透明度
-  const logoBlur = useRef(new Animated.Value(1)).current; // ロゴのブラー
   const contentOpacity = useRef(new Animated.Value(0)).current; // コンテンツの不透明度
   const tapHintOpacity = useRef(new Animated.Value(0)).current; // タップヒントの不透明度
 
-  // スプラッシュアニメーション（初回のみ）
+  // スプラッシュアニメーション（シンプルなフェードイン）
   useEffect(() => {
-    if (currentIndex === 0 && !splashComplete) {
-      // 1. ロゴをぼやけた状態でフェードイン
+    if (currentIndex === 0 && !canTap) {
+      // ロゴをシンプルにフェードイン
       Animated.timing(logoOpacity, {
         toValue: 1,
-        duration: 800,
+        duration: 1000,
         easing: Easing.out(Easing.ease),
         useNativeDriver: true,
-      }).start();
-
-      // 2. 背景とロゴのピントを合わせる
-      setTimeout(() => {
-        Animated.parallel([
-          Animated.timing(grayOverlay, {
-            toValue: 0,
-            duration: 1200,
-            easing: Easing.inOut(Easing.ease),
-            useNativeDriver: true,
-          }),
-          Animated.timing(logoBlur, {
-            toValue: 0,
-            duration: 1200,
-            easing: Easing.inOut(Easing.ease),
-            useNativeDriver: true,
-          }),
-        ]).start();
-
-        // ブラーレベルを徐々に減少
-        let level = 15;
-        const blurInterval = setInterval(() => {
-          level = Math.max(0, level - 1.5);
-          setBlurLevel(level);
-          if (level === 0) {
-            clearInterval(blurInterval);
-            // 次のレンダーサイクルで状態を更新
-            requestAnimationFrame(() => {
-              setSplashComplete(true);
-              setCanTap(true);
-            });
-            // タップヒントを表示
-            setTimeout(() => {
-              Animated.loop(
-                Animated.sequence([
-                  Animated.timing(tapHintOpacity, {
-                    toValue: 1,
-                    duration: 1000,
-                    useNativeDriver: true,
-                  }),
-                  Animated.timing(tapHintOpacity, {
-                    toValue: 0.3,
-                    duration: 1000,
-                    useNativeDriver: true,
-                  }),
-                ])
-              ).start();
-            }, 500);
-          }
-        }, 100);
-      }, 800);
+      }).start(() => {
+        setCanTap(true);
+        // タップヒントを表示
+        Animated.loop(
+          Animated.sequence([
+            Animated.timing(tapHintOpacity, {
+              toValue: 1,
+              duration: 1000,
+              useNativeDriver: true,
+            }),
+            Animated.timing(tapHintOpacity, {
+              toValue: 0.3,
+              duration: 1000,
+              useNativeDriver: true,
+            }),
+          ])
+        ).start();
+      });
     }
   }, [currentIndex]);
 
@@ -158,21 +121,14 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onComplete }
         source={require('../../assets/images/room-after-nordic2-optimized.jpg')}
         style={[styles.slideBg, { width }]}
         imageStyle={styles.bgImage}
-        blurRadius={blurLevel}
         accessibilityLabel="おしゃれなリビングルーム"
       >
-        <Animated.View style={[styles.grayOverlay, { opacity: grayOverlay }]} />
         <View style={styles.dimOverlay} />
         <View style={styles.centerContent}>
           {!showContent ? (
             <>
-              <Animated.View
-                style={{
-                  opacity: logoOpacity,
-                  transform: [{ scale: logoBlur }],
-                }}
-              >
-                <Text style={styles.logoTextWhite}>nyoki</Text>
+              <Animated.View style={{ opacity: logoOpacity }}>
+                <Text style={styles.logoTextGradient}>nyoki</Text>
               </Animated.View>
               {splashComplete && (
                 <Animated.Text
@@ -714,10 +670,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   bgImage: {},
-  grayOverlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: '#d0d0d0',
-  },
   dimOverlay: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: 'rgba(0,0,0,0.4)',
@@ -734,11 +686,14 @@ const styles = StyleSheet.create({
     paddingVertical: 80,
     marginHorizontal: 32,
   },
-  logoTextWhite: {
-    fontSize: 56,
+  logoTextGradient: {
+    fontSize: 64,
     fontWeight: '300',
-    letterSpacing: 2,
+    letterSpacing: 3,
     color: '#FFFFFF',
+    textShadowColor: 'rgba(72, 187, 120, 0.5)',
+    textShadowOffset: { width: 0, height: 2 },
+    textShadowRadius: 10,
   },
   h1White: {
     fontSize: 32,
