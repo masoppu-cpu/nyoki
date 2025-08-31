@@ -80,8 +80,11 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onComplete }
           setBlurLevel(level);
           if (level === 0) {
             clearInterval(blurInterval);
-            setSplashComplete(true);
-            setCanTap(true);
+            // 次のレンダーサイクルで状態を更新
+            requestAnimationFrame(() => {
+              setSplashComplete(true);
+              setCanTap(true);
+            });
             // タップヒントを表示
             setTimeout(() => {
               Animated.loop(
@@ -103,7 +106,7 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onComplete }
         }, 100);
       }, 800);
     }
-  }, [currentIndex, splashComplete]);
+  }, [currentIndex]);
 
   // タップハンドラー
   const handleSplashTap = () => {
@@ -326,7 +329,6 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onComplete }
       if (isActive && !hasAnimated) {
         const timer = setTimeout(() => {
           // ボタンを押す演出
-          setLocalPurchaseAdded(true);
           Animated.sequence([
             Animated.timing(addScale, {
               toValue: 0.9,
@@ -338,8 +340,11 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onComplete }
               friction: 3,
               useNativeDriver: true,
             }),
-          ]).start();
-          setHasAnimated(true);
+          ]).start(() => {
+            // アニメーション完了後に状態を更新
+            setLocalPurchaseAdded(true);
+            setHasAnimated(true);
+          });
         }, 1500); // 画面表示から1.5秒後に開始
         
         return () => clearTimeout(timer);
@@ -348,7 +353,7 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onComplete }
         setLocalPurchaseAdded(false);
         setHasAnimated(false);
       }
-    }, [isActive, hasAnimated]);
+    }, [isActive]);
 
     return (
       <View style={[styles.slide, { width, paddingTop: 60 }]} accessibilityLabel="購入リストで簡単管理">
@@ -480,7 +485,7 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onComplete }
         setHasWaterAnimated(false);
         setHasChatAnimated(false);
       }
-    }, [isActive, hasWaterAnimated, hasChatAnimated]);
+    }, [isActive]);
 
     return (
       <ScrollView

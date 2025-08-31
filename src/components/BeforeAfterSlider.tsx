@@ -25,7 +25,7 @@ const BeforeAfterSlider: React.FC<BeforeAfterSliderProps> = ({
   const [sliderPosition, setSliderPosition] = useState(initialPos);
   const sliderAnim = useRef(new Animated.Value(initialPos)).current;
 
-  const panResponder = PanResponder.create({
+  const panResponder = useMemo(() => PanResponder.create({
     onStartShouldSetPanResponder: () => true,
     onMoveShouldSetPanResponder: () => true,
     onPanResponderGrant: () => {
@@ -33,38 +33,56 @@ const BeforeAfterSlider: React.FC<BeforeAfterSliderProps> = ({
     },
     onPanResponderMove: (_, gestureState) => {
       const newPosition = Math.max(0, Math.min(screenWidth, gestureState.moveX));
-      setSliderPosition(newPosition);
       sliderAnim.setValue(newPosition);
+      // 次のレンダーサイクルで状態を更新
+      requestAnimationFrame(() => {
+        setSliderPosition(newPosition);
+      });
     },
     onPanResponderRelease: () => {
       // snap to edges for 0-10% and 90-100%
-      const ratio = sliderPosition / screenWidth;
+      const ratio = sliderAnim._value / screenWidth;
       if (ratio <= 0.1) {
-        Animated.timing(sliderAnim, { toValue: 0, duration: 160, useNativeDriver: false }).start(() => setSliderPosition(0));
+        Animated.timing(sliderAnim, { toValue: 0, duration: 160, useNativeDriver: false }).start(() => {
+          requestAnimationFrame(() => setSliderPosition(0));
+        });
       } else if (ratio >= 0.9) {
-        Animated.timing(sliderAnim, { toValue: screenWidth, duration: 160, useNativeDriver: false }).start(() => setSliderPosition(screenWidth));
+        Animated.timing(sliderAnim, { toValue: screenWidth, duration: 160, useNativeDriver: false }).start(() => {
+          requestAnimationFrame(() => setSliderPosition(screenWidth));
+        });
+      } else {
+        requestAnimationFrame(() => setSliderPosition(sliderAnim._value));
       }
       onInteractionEnd?.();
     },
-  });
+  }), [screenWidth, onInteractionStart, onInteractionEnd]);
 
   // Auto-animate from -> to when requested
   useEffect(() => {
     if (!autoAnimate) return;
     const fromPos = Math.max(0, Math.min(1, autoAnimate.from)) * screenWidth;
     const toPos = Math.max(0, Math.min(1, autoAnimate.to)) * screenWidth;
+    
+    // 初期位置を設定
     sliderAnim.setValue(fromPos);
-    setSliderPosition(fromPos);
+    requestAnimationFrame(() => {
+      setSliderPosition(fromPos);
+    });
+    
     const t = setTimeout(() => {
       Animated.timing(sliderAnim, {
         toValue: toPos,
         duration: autoAnimate.duration ?? 1600,
         easing: Easing.inOut(Easing.ease),
         useNativeDriver: false,
-      }).start(() => setSliderPosition(toPos));
+      }).start(() => {
+        requestAnimationFrame(() => {
+          setSliderPosition(toPos);
+        });
+      });
     }, autoAnimate.delay ?? 0);
     return () => clearTimeout(t);
-  }, [screenWidth, autoAnimate?.from, autoAnimate?.to, autoAnimate?.duration, autoAnimate?.delay]);
+  }, [screenWidth, autoAnimate?.from, autoAnimate?.to, autoAnimate?.duration, autoAnimate?.delay, sliderAnim]);
 
   return (
     <View style={styles.container}>
