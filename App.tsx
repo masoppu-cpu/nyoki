@@ -5,9 +5,13 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { initMonitoring, track } from './src/lib/monitoring';
 import { OnboardingScreen } from './src/screens/OnboardingScreen';
 import { COLORS } from './src/config/constants';
+// カメラテスト用のインポート（テスト時のみ有効化）
+import TestApp from './TestApp';
 
 export default function App() {
   const [showOnboarding, setShowOnboarding] = useState<boolean | null>(null);
+  // カメラテストモード（テスト時はtrueに設定）
+  const CAMERA_TEST_MODE = false;
 
   useEffect(() => {
     initMonitoring();
@@ -24,6 +28,11 @@ export default function App() {
       setShowOnboarding(false);
     }
   };
+
+  // カメラテストモードの場合
+  if (CAMERA_TEST_MODE) {
+    return <TestApp />;
+  }
 
   // ローディング中の表示
   if (showOnboarding === null) {
