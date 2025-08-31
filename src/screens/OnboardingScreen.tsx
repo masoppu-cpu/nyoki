@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import {
   View,
   Text,
@@ -22,7 +22,7 @@ import { Ionicons } from '@expo/vector-icons';
 
 const { width } = Dimensions.get('window');
 
-const PAGES = 5;
+const PAGES = 6;
 const SPLASH_HOLD_MS = 1800; // スプラッシュアニメーション後の待機時間
 
 interface OnboardingScreenProps {
@@ -33,96 +33,75 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onComplete }
   const [currentIndex, setCurrentIndex] = useState(0);
   const flatListRef = useRef<FlatList>(null);
   const [scrollEnabled, setScrollEnabled] = useState(true);
-  const [waterDone, setWaterDone] = useState(false);
-  const [chatOpen, setChatOpen] = useState(false);
-  const [purchaseAdded, setPurchaseAdded] = useState(false);
 
   // Splash animation controls
-  const [blurLevel, setBlurLevel] = useState(15);
-  const [splashComplete, setSplashComplete] = useState(false);
-  const [showContent, setShowContent] = useState(false);
   const [canTap, setCanTap] = useState(false);
-  const grayOverlay = useRef(new Animated.Value(1)).current; // グレーオーバーレイ
   const logoOpacity = useRef(new Animated.Value(0)).current; // ロゴの不透明度
-  const logoBlur = useRef(new Animated.Value(1)).current; // ロゴのブラー
-  const contentOpacity = useRef(new Animated.Value(0)).current; // コンテンツの不透明度
   const tapHintOpacity = useRef(new Animated.Value(0)).current; // タップヒントの不透明度
 
-  // スプラッシュアニメーション（初回のみ）
+  // 画像の事前定義（require()を事前に実行）
+  const homeImageBg = useMemo(() => require('../../assets/images/onbording/homeImage-optimized.jpg'), []);
+  const roomBeforeImage = useMemo(() => require('../../assets/images/onbording/roomBeforeNordic-optimized.jpg'), []);
+  const roomAfterImage = useMemo(() => require('../../assets/images/onbording/roomAfterNordic-optimized.jpg'), []);
+  const monsteraImage = useMemo(() => require('../../assets/images/plants/plants_Monstera deliciosa .jpeg'), []);
+  
+  // 画像のプリロード
   useEffect(() => {
-    if (currentIndex === 0 && !splashComplete) {
-      // 1. ロゴをぼやけた状態でフェードイン
+    const images = [
+      homeImageBg,
+      roomBeforeImage,
+      roomAfterImage,
+      monsteraImage,
+    ];
+    
+    // React Nativeでの画像プリロード（遅延実行）
+    const timer = setTimeout(() => {
+      images.forEach((image) => {
+        Image.prefetch(Image.resolveAssetSource(image).uri).catch(() => {
+          // エラーは無視（Expo Goでは時々失敗する）
+        });
+      });
+    }, 100);
+    
+    return () => clearTimeout(timer);
+  }, [homeImageBg, roomBeforeImage, roomAfterImage, monsteraImage]);
+
+  // スプラッシュアニメーション（シンプルなフェードイン）
+  useEffect(() => {
+    if (currentIndex === 0 && !canTap) {
+      // ロゴをシンプルにフェードイン
       Animated.timing(logoOpacity, {
         toValue: 1,
-        duration: 800,
+        duration: 1000,
         easing: Easing.out(Easing.ease),
         useNativeDriver: true,
-      }).start();
-
-      // 2. 背景とロゴのピントを合わせる
-      setTimeout(() => {
-        Animated.parallel([
-          Animated.timing(grayOverlay, {
-            toValue: 0,
-            duration: 1200,
-            easing: Easing.inOut(Easing.ease),
-            useNativeDriver: true,
-          }),
-          Animated.timing(logoBlur, {
-            toValue: 0,
-            duration: 1200,
-            easing: Easing.inOut(Easing.ease),
-            useNativeDriver: true,
-          }),
-        ]).start();
-
-        // ブラーレベルを徐々に減少
-        let level = 15;
-        const blurInterval = setInterval(() => {
-          level = Math.max(0, level - 1.5);
-          setBlurLevel(level);
-          if (level === 0) {
-            clearInterval(blurInterval);
-            setSplashComplete(true);
-            setCanTap(true);
-            // タップヒントを表示
-            setTimeout(() => {
-              Animated.loop(
-                Animated.sequence([
-                  Animated.timing(tapHintOpacity, {
-                    toValue: 1,
-                    duration: 1000,
-                    useNativeDriver: true,
-                  }),
-                  Animated.timing(tapHintOpacity, {
-                    toValue: 0.3,
-                    duration: 1000,
-                    useNativeDriver: true,
-                  }),
-                ])
-              ).start();
-            }, 500);
-          }
-        }, 100);
-      }, 800);
+      }).start(() => {
+        setCanTap(true);
+        // タップヒントを表示
+        Animated.loop(
+          Animated.sequence([
+            Animated.timing(tapHintOpacity, {
+              toValue: 1,
+              duration: 1000,
+              useNativeDriver: true,
+            }),
+            Animated.timing(tapHintOpacity, {
+              toValue: 0.3,
+              duration: 1000,
+              useNativeDriver: true,
+            }),
+          ])
+        ).start();
+      });
     }
-  }, [currentIndex, splashComplete]);
+  }, [currentIndex]);
 
   // タップハンドラー
   const handleSplashTap = () => {
-    if (canTap && !showContent) {
-      setShowContent(true);
-      Animated.timing(tapHintOpacity, {
-        toValue: 0,
-        duration: 200,
-        useNativeDriver: true,
-      }).start();
-      Animated.timing(contentOpacity, {
-        toValue: 1,
-        duration: 600,
-        easing: Easing.out(Easing.ease),
-        useNativeDriver: true,
-      }).start();
+    if (canTap) {
+      // 直接次のページに遷移
+      setScrollEnabled(true);
+      flatListRef.current?.scrollToIndex({ index: 1, animated: true });
     }
   };
 
@@ -155,50 +134,58 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onComplete }
       disabled={!canTap}
     >
       <ImageBackground
-        source={require('../../assets/images/room-after-nordic.jpg')}
+        source={homeImageBg}
         style={[styles.slideBg, { width }]}
         imageStyle={styles.bgImage}
-        blurRadius={blurLevel}
         accessibilityLabel="おしゃれなリビングルーム"
+        fadeDuration={0}
+        resizeMode="cover"
       >
-        <Animated.View style={[styles.grayOverlay, { opacity: grayOverlay }]} />
         <View style={styles.dimOverlay} />
         <View style={styles.centerContent}>
-          {!showContent ? (
-            <>
-              <Animated.View
-                style={{
-                  opacity: logoOpacity,
-                  transform: [{ scale: logoBlur }],
-                }}
-              >
-                <Text style={styles.logoTextWhite}>nyoki</Text>
-              </Animated.View>
-              {splashComplete && (
-                <Animated.Text
-                  style={[
-                    styles.tapHint,
-                    { opacity: tapHintOpacity },
-                  ]}
-                >
-                  タップして始める
-                </Animated.Text>
-              )}
-            </>
-          ) : (
-            <Animated.View style={{ opacity: contentOpacity, alignItems: 'center' }}>
-              <Text style={styles.h1White}>写真一枚で</Text>
-              <Text style={styles.h2White}>理想の植物を見つけよう</Text>
-              <Text style={[styles.subWhite, { marginTop: 8 }]}>部屋の写真から相性の良い植物をAIが提案</Text>
+          <>
+            <Animated.View style={{ opacity: logoOpacity }}>
+              <Text style={styles.logoTextGradient}>nyoki</Text>
             </Animated.View>
-          )}
+            {canTap && (
+              <Animated.Text
+                style={[
+                  styles.tapHint,
+                  { opacity: tapHintOpacity },
+                ]}
+              >
+                タップして始める
+              </Animated.Text>
+            )}
+          </>
         </View>
       </ImageBackground>
     </TouchableOpacity>
   );
 
-  // 画面2: かんたん3ステップ
-  const Page2: React.FC<{ isActive: boolean }> = ({ isActive }) => {
+  // 画面2: 写真一枚で理想の植物を見つけよう
+  const Page2 = () => (
+    <View style={{ width }}>
+      <ImageBackground
+        source={homeImageBg}
+        style={[styles.slideBg, { width }]}
+        imageStyle={styles.bgImage}
+        accessibilityLabel="おしゃれなリビングルーム"
+        fadeDuration={0}
+        resizeMode="cover"
+      >
+        <View style={styles.dimOverlay} />
+        <View style={styles.centerContent}>
+          <Text style={styles.h1White}>写真一枚で</Text>
+          <Text style={styles.h1White}>理想の植物を見つけよう</Text>
+          <Text style={[styles.subWhite, { marginTop: 8 }]}>部屋の写真から相性の良い植物をAIが提案</Text>
+        </View>
+      </ImageBackground>
+    </View>
+  );
+
+  // 画面3: かんたん3ステップ
+  const Page3: React.FC<{ isActive: boolean }> = ({ isActive }) => {
     const stepOp = [
       useRef(new Animated.Value(0)).current,
       useRef(new Animated.Value(0)).current,
@@ -236,9 +223,8 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onComplete }
     }, [isActive]);
 
     return (
-      <ScrollView
-        style={{ width }}
-        contentContainerStyle={[styles.slide, { paddingTop: 60 }]}
+      <View
+        style={[styles.slide, { width, paddingTop: 60 }]}
         accessibilityLabel="かんたん3ステップ"
       >
         <Text style={styles.stepHeader}>かんたん3ステップ</Text>
@@ -306,37 +292,54 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onComplete }
           }}
         >
           <BeforeAfterSlider
-            beforeImage={require('../../assets/images/room-before-nordic.jpeg')}
-            afterImage={require('../../assets/images/room-after-nordic.jpg')}
+            beforeImage={roomBeforeImage}
+            afterImage={roomAfterImage}
             initialPercent={0.5}
             autoAnimate={{ from: 1, to: 0.2, duration: 2000, delay: 600 }}
             onInteractionStart={() => setScrollEnabled(false)}
             onInteractionEnd={() => setScrollEnabled(true)}
           />
         </Animated.View>
-      </ScrollView>
+      </View>
     );
   };
 
-  // 画面3: 購入リスト機能
-  const Page3 = () => {
+  // 画面4: 購入リスト機能
+  const Page4: React.FC<{ isActive: boolean }> = ({ isActive }) => {
     const addScale = useRef(new Animated.Value(1)).current;
+    const [localPurchaseAdded, setLocalPurchaseAdded] = useState(false);
+    const [hasAnimated, setHasAnimated] = useState(false);
     
-    const handleAdd = () => {
-      setPurchaseAdded(true);
-      Animated.sequence([
-        Animated.timing(addScale, {
-          toValue: 0.95,
-          duration: 100,
-          useNativeDriver: true,
-        }),
-        Animated.spring(addScale, {
-          toValue: 1,
-          useNativeDriver: true,
-        }),
-      ]).start();
-      setTimeout(() => setPurchaseAdded(false), 2000);
-    };
+    // 自動でボタンを押すアニメーション（1回のみ）
+    useEffect(() => {
+      if (isActive && !hasAnimated) {
+        const timer = setTimeout(() => {
+          // ボタンを押す演出
+          Animated.timing(addScale, {
+            toValue: 0.9,
+            duration: 150,
+            useNativeDriver: true,
+          }).start(() => {
+            // ボタンが押されたらすぐに追加済みに変更
+            setLocalPurchaseAdded(true);
+            setHasAnimated(true);
+            
+            // ボタンを元に戻すアニメーション
+            Animated.spring(addScale, {
+              toValue: 1,
+              friction: 3,
+              useNativeDriver: true,
+            }).start();
+          });
+        }, 1500); // 画面表示から1.5秒後に開始
+        
+        return () => clearTimeout(timer);
+      } else if (!isActive) {
+        // 画面から離れたらリセット
+        setLocalPurchaseAdded(false);
+        setHasAnimated(false);
+      }
+    }, [isActive]);
 
     return (
       <View style={[styles.slide, { width, paddingTop: 60 }]} accessibilityLabel="購入リストで簡単管理">
@@ -379,9 +382,8 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onComplete }
                 <Text style={styles.tagText}>予算内</Text>
               </View>
             </View>
-            <TouchableOpacity
-              onPress={handleAdd}
-              style={[styles.addButton, purchaseAdded && styles.addButtonDone]}
+            <View
+              style={[styles.addButton, localPurchaseAdded && styles.addButtonDone]}
               accessibilityLabel="購入リストに追加"
             >
               <Animated.View
@@ -392,20 +394,20 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onComplete }
                 }}
               >
                 <Ionicons
-                  name={purchaseAdded ? 'checkmark' : 'add'}
+                  name={localPurchaseAdded ? 'checkmark' : 'add'}
                   size={18}
-                  color={purchaseAdded ? COLORS.primary : COLORS.textOnPrimary}
+                  color={localPurchaseAdded ? COLORS.primary : COLORS.textOnPrimary}
                 />
                 <Text
                   style={[
                     styles.addButtonText,
-                    purchaseAdded && { color: COLORS.primary },
+                    localPurchaseAdded && { color: COLORS.primary },
                   ]}
                 >
-                  {purchaseAdded ? '追加済み' : '購入リストに追加'}
+                  {localPurchaseAdded ? '追加済み' : '購入リストに追加'}
                 </Text>
               </Animated.View>
-            </TouchableOpacity>
+            </View>
           </View>
         </View>
       </View>
@@ -413,138 +415,274 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onComplete }
   };
 
 
-  // 画面4: 購入後のサポート機能
-  const Page4 = () => {
-    const waterScale = useRef(new Animated.Value(1)).current;
-    const toggleWater = () => {
-      setWaterDone(!waterDone);
-      Animated.sequence([
-        Animated.timing(waterScale, {
-          toValue: 1.2,
-          duration: 150,
-          useNativeDriver: true,
-        }),
-        Animated.spring(waterScale, {
-          toValue: 1,
-          useNativeDriver: true,
-        }),
-      ]).start();
-    };
+  // 画面5: 購入後のサポート機能
+  const Page5: React.FC<{ isActive: boolean }> = ({ isActive }) => {
+    const checkScale = useRef(new Animated.Value(1)).current;
+    const aiButtonScale = useRef(new Animated.Value(1)).current;
+    const chatCardOpacity = useRef(new Animated.Value(0)).current;
+    const chatCardTranslateY = useRef(new Animated.Value(20)).current;
+    const contentTranslateY = useRef(new Animated.Value(0)).current;
+    const userChatOpacity = useRef(new Animated.Value(0)).current;
+    const userChatTranslateX = useRef(new Animated.Value(20)).current;
+    const aiChatOpacity = useRef(new Animated.Value(0)).current;
+    const aiChatTranslateX = useRef(new Animated.Value(-20)).current;
+    const [localWaterDone, setLocalWaterDone] = useState(false);
+    const [localChatOpen, setLocalChatOpen] = useState(false);
+    const [showUserChat, setShowUserChat] = useState(false);
+    const [showAIChat, setShowAIChat] = useState(false);
+    const hasAnimatedRef = useRef(false);
+    
+    // 自動アニメーション（1回のみ）
+    useEffect(() => {
+      let waterTimer: NodeJS.Timeout;
+      
+      if (isActive && !hasAnimatedRef.current) {
+        hasAnimatedRef.current = true;
+        
+        // 1. 水やりチェックボックスを自動でタップ
+        waterTimer = setTimeout(() => {
+          setLocalWaterDone(true);
+          
+          Animated.sequence([
+            Animated.timing(checkScale, {
+              toValue: 1.3,
+              duration: 200,
+              useNativeDriver: true,
+            }),
+            Animated.spring(checkScale, {
+              toValue: 1,
+              friction: 3,
+              useNativeDriver: true,
+            }),
+          ]).start(() => {
+            // 水やりチェック完了後、AI相談ボタンを押すアニメーション
+            setTimeout(() => {
+              // AI相談ボタンを押す演出
+              Animated.sequence([
+                Animated.timing(aiButtonScale, {
+                  toValue: 0.9,
+                  duration: 100,
+                  useNativeDriver: true,
+                }),
+                Animated.spring(aiButtonScale, {
+                  toValue: 1,
+                  friction: 3,
+                  useNativeDriver: true,
+                }),
+              ]).start(() => {
+                requestAnimationFrame(() => {
+                  setLocalChatOpen(true);
+                  
+                  // 上のコンテンツをスムーズにスライド & カードを表示
+                  Animated.parallel([
+                    // 上のコンテンツを上にスライド
+                    Animated.timing(contentTranslateY, {
+                      toValue: -30,
+                      duration: 300,
+                      easing: Easing.out(Easing.ease),
+                      useNativeDriver: true,
+                    }),
+                    // カードをフェードイン
+                    Animated.timing(chatCardOpacity, {
+                      toValue: 1,
+                      duration: 300,
+                      useNativeDriver: true,
+                    }),
+                    Animated.timing(chatCardTranslateY, {
+                      toValue: 0,
+                      duration: 300,
+                      easing: Easing.out(Easing.ease),
+                      useNativeDriver: true,
+                    }),
+                  ]).start(() => {
+                    // カード表示後、ユーザーチャットを表示
+                    setTimeout(() => {
+                      setShowUserChat(true);
+                      Animated.parallel([
+                        Animated.timing(userChatOpacity, {
+                          toValue: 1,
+                          duration: 300,
+                          useNativeDriver: true,
+                        }),
+                        Animated.timing(userChatTranslateX, {
+                          toValue: 0,
+                          duration: 300,
+                          easing: Easing.out(Easing.ease),
+                          useNativeDriver: true,
+                        }),
+                      ]).start(() => {
+                        // ユーザーチャット表示後、少し待ってAIの返答を表示
+                        setTimeout(() => {
+                          setShowAIChat(true);
+                          Animated.parallel([
+                            Animated.timing(aiChatOpacity, {
+                              toValue: 1,
+                              duration: 400,
+                              useNativeDriver: true,
+                            }),
+                            Animated.timing(aiChatTranslateX, {
+                              toValue: 0,
+                              duration: 400,
+                              easing: Easing.out(Easing.ease),
+                              useNativeDriver: true,
+                            }),
+                          ]).start();
+                        }, 800); // AIの返答を0.8秒後に表示
+                      });
+                    }, 300); // カード表示後0.3秒待ってユーザーチャット表示
+                  });
+                });
+              });
+            }, 300); // 水やりチェック後、少し待ってからAI相談ボタンを押す
+          });
+        }, 1500);
+      }
+      
+      return () => {
+        if (waterTimer) clearTimeout(waterTimer);
+      };
+    }, [isActive, chatCardOpacity, chatCardTranslateY, contentTranslateY, aiButtonScale, userChatOpacity, userChatTranslateX, aiChatOpacity, aiChatTranslateX]);
 
     return (
-      <ScrollView
-        style={{ width }}
-        contentContainerStyle={[styles.slide, { paddingTop: 60 }]}
+      <View
+        style={[styles.slide, { width, paddingTop: 60 }]}
         accessibilityLabel="購入後のケアも安心"
       >
-        <Text style={styles.sectionHeader}>購入後のケアも安心</Text>
-        <Text style={[styles.sectionSub, { textAlign: 'center', marginBottom: 20 }]}>
-          水やり管理やAI相談でサポート
-        </Text>
+        <Animated.View
+          style={{
+            transform: [{ translateY: contentTranslateY }],
+          }}
+        >
+          <Text style={styles.sectionHeader}>購入後のケアも安心</Text>
+          <Text style={[styles.sectionSub, { textAlign: 'center', marginBottom: 20 }]}>
+            水やり管理やAI相談でサポート
+          </Text>
 
-        <View style={styles.featureSection}>
+          <View style={[styles.featureSection, { alignItems: 'flex-start' }]}>
           <Text style={styles.featureLabel}>機能1：水やり管理</Text>
-          <View style={styles.careCard}>
+          <View style={[styles.careCard, { width: '100%' }]}>
             <Image
-              source={require('../../assets/images/plants/plants_Monstera deliciosa .jpeg')}
+              source={monsteraImage}
               style={styles.careThumb}
               accessibilityLabel="モンステラのアイコン"
+              fadeDuration={0}
+              resizeMode="cover"
             />
             <View style={{ flex: 1 }}>
               <Text style={styles.careTitle}>モンステラ</Text>
-              <Text style={styles.careSub}>水やり</Text>
-            </View>
-            <TouchableOpacity onPress={toggleWater} accessibilityLabel="水やり完了">
-              <Animated.View style={{ transform: [{ scale: waterScale }] }}>
+              <View style={styles.taskRow}>
                 <Ionicons
-                  name={waterDone ? 'checkmark-circle' : 'water-outline'}
-                  size={32}
-                  color={waterDone ? COLORS.primary : COLORS.textSecondary}
+                  name="water-outline"
+                  size={18}
+                  color={COLORS.textSecondary}
+                  style={{ marginRight: 6 }}
                 />
-              </Animated.View>
-            </TouchableOpacity>
+                <Text style={styles.careSub}>水やり</Text>
+              </View>
+            </View>
+            <Animated.View style={{ transform: [{ scale: checkScale }] }}>
+              <View style={[
+                styles.checkbox,
+                localWaterDone && styles.checkboxDone
+              ]}>
+                {localWaterDone && (
+                  <Ionicons
+                    name="checkmark"
+                    size={18}
+                    color={COLORS.textOnPrimary}
+                  />
+                )}
+              </View>
+            </Animated.View>
           </View>
         </View>
 
-        <View style={[styles.featureSection, { marginTop: 24 }]}>
-          <Text style={styles.featureLabel}>機能2：AI相談</Text>
-          <Text style={[styles.sectionSub, { marginBottom: 12 }]}>
+        <View style={{ marginTop: 24 }}>
+          <Text style={[styles.featureLabel, { paddingHorizontal: 20, alignSelf: 'flex-start' }]}>機能2：AI相談</Text>
+          <Text style={[styles.sectionSub, { marginBottom: 12, textAlign: 'center' }]}>
             植物の調子が気になったら
           </Text>
-          <TouchableOpacity
-            style={styles.aiConsultButton}
-            onPress={() => {
-              setChatOpen(true);
-              setScrollEnabled(false);
-            }}
-            accessibilityLabel="AI相談"
-          >
-            <Text style={styles.aiConsultButtonText}>AI相談</Text>
-          </TouchableOpacity>
-        </View>
-
-        <Modal
-          visible={chatOpen}
-          animationType="slide"
-          transparent
-          onRequestClose={() => {
-            setChatOpen(false);
-            setScrollEnabled(true);
-          }}
-        >
-          <View style={styles.modalBackdrop}>
-            <View style={styles.modalSheet}>
-              <View style={styles.modalHeader}>
-                <Text style={styles.modalTitle}>AI植物相談</Text>
-                <TouchableOpacity
-                  onPress={() => {
-                    setChatOpen(false);
-                    setScrollEnabled(true);
-                  }}
-                >
-                  <Ionicons name="close" size={24} color={COLORS.textOnBase} />
-                </TouchableOpacity>
-              </View>
-              <View style={styles.chatSection}>
-                <View style={styles.chatBubbleUser}>
-                  <Text style={styles.chatTextUser}>葉が黄色くなってきました</Text>
-                </View>
-                <View style={styles.chatBubbleAI}>
-                  <Text style={styles.chatTextAI}>
-                    土の乾き具合を3-4cm深さで確認してみてください。水のやりすぎの可能性があります。次回の水やりは土が乾いてからにしましょう。
-                  </Text>
-                </View>
-              </View>
-              <View style={styles.quickTipsSection}>
-                <Text style={styles.quickTipsTitle}>クイックヒント</Text>
-                <View style={styles.quickTips}>
-                  {['水やり頻度：週1-2回', '置き場所：明るい日陰', '冬の管理：水やり控えめ'].map((t) => (
-                    <View key={t} style={styles.tip}>
-                      <Ionicons name="checkmark-circle" size={14} color={COLORS.primary} />
-                      <Text style={styles.tipText}>{t}</Text>
-                    </View>
-                  ))}
-                </View>
-              </View>
-            </View>
+          <View style={{ alignItems: 'center', width: '100%' }}>
+            <Animated.View
+              style={[
+                styles.aiConsultButton,
+                {
+                  transform: [{ scale: aiButtonScale }],
+                },
+              ]}
+              accessibilityLabel="AI相談"
+            >
+              <Text style={styles.aiConsultButtonText}>AI相談</Text>
+            </Animated.View>
           </View>
-        </Modal>
-      </ScrollView>
+        </View>
+        </Animated.View>
+
+        {localChatOpen && (
+          <View style={{ paddingHorizontal: 20, width: '100%' }}>
+            <Animated.View
+              style={[
+                styles.chatCard,
+                {
+                  opacity: chatCardOpacity,
+                  transform: [{ translateY: chatCardTranslateY }],
+                },
+              ]}
+            >
+            <View style={styles.chatCardHeader}>
+              <Text style={styles.chatCardTitle}>AI植物相談</Text>
+            </View>
+            <View style={styles.chatCardContent}>
+              {showUserChat && (
+                <Animated.View
+                  style={[
+                    styles.chatBubbleUser,
+                    {
+                      opacity: userChatOpacity,
+                      transform: [{ translateX: userChatTranslateX }],
+                    },
+                  ]}
+                >
+                  <Text style={styles.chatTextUser}>葉が黄色くなってきました</Text>
+                </Animated.View>
+              )}
+              {showAIChat && (
+                <Animated.View
+                  style={[
+                    styles.chatBubbleAI,
+                    {
+                      opacity: aiChatOpacity,
+                      transform: [{ translateX: aiChatTranslateX }],
+                    },
+                  ]}
+                >
+                  <Text style={styles.chatTextAI}>
+                    土の乾き具合を確認してみてください。水のやりすぎの可能性があります。
+                  </Text>
+                </Animated.View>
+              )}
+            </View>
+          </Animated.View>
+          </View>
+        )}
+      </View>
     );
   };
 
-  // 画面5: 行動喚起 (Call to Action)
-  const Page5 = () => (
+  // 画面6: 行動喚起 (Call to Action)
+  const Page6 = () => (
     <ImageBackground
-      source={require('../../assets/images/room-after-nordic.jpg')}
+      source={homeImageBg}
       style={[styles.slideBg, { width }]}
       imageStyle={styles.bgImage}
       accessibilityLabel="おしゃれなリビングルーム"
+      fadeDuration={0}
+      resizeMode="cover"
     >
       <View style={styles.dimOverlay} />
       <View style={[styles.centerContent, { width: '100%' }]}>
         <Text style={styles.h1White}>写真一枚で</Text>
-        <Text style={styles.h2White}>理想の植物を見つけよう</Text>
+        <Text style={styles.h1White}>理想の植物を見つけよう</Text>
         <View style={{ marginTop: 32, width: '75%' }}>
           <TouchableOpacity
             style={styles.primaryCta}
@@ -570,13 +708,15 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onComplete }
       case 0:
         return <Page1 />;
       case 1:
-        return <Page2 isActive={currentIndex === 1} />;
+        return <Page2 />;
       case 2:
-        return <Page3 />;
+        return <Page3 isActive={currentIndex === 2} />;
       case 3:
-        return <Page4 />;
+        return <Page4 isActive={currentIndex === 3} />;
       case 4:
-        return <Page5 />;
+        return <Page5 isActive={currentIndex === 4} />;
+      case 5:
+        return <Page6 />;
       default:
         return <View />;
     }
@@ -619,22 +759,33 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onComplete }
         onViewableItemsChanged={onViewableItemsChanged}
         viewabilityConfig={viewabilityConfig}
         keyExtractor={(_, i) => String(i)}
+        removeClippedSubviews={false}
+        initialNumToRender={PAGES}
+        maxToRenderPerBatch={PAGES}
+        windowSize={PAGES}
+        getItemLayout={(data, index) => ({
+          length: width,
+          offset: width * index,
+          index,
+        })}
       />
 
-      {/* 下部のページネーション */}
-      <View style={styles.pagination}>
-        <View style={styles.dots}>
-          {Array.from({ length: PAGES }).map((_, index) => (
-            <View
-              key={index}
-              style={[
-                styles.dot,
-                currentIndex === index && styles.activeDot,
-              ]}
-            />
-          ))}
+      {/* 下部のページネーション（nyokiタップ前の画面では非表示） */}
+      {currentIndex > 0 && (
+        <View style={styles.pagination}>
+          <View style={styles.dots}>
+            {Array.from({ length: PAGES }).map((_, index) => (
+              <View
+                key={index}
+                style={[
+                  styles.dot,
+                  currentIndex === index && styles.activeDot,
+                ]}
+              />
+            ))}
+          </View>
         </View>
-      </View>
+      )}
     </View>
   );
 };
@@ -649,10 +800,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   bgImage: {},
-  grayOverlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: '#d0d0d0',
-  },
   dimOverlay: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: 'rgba(0,0,0,0.4)',
@@ -669,10 +816,10 @@ const styles = StyleSheet.create({
     paddingVertical: 80,
     marginHorizontal: 32,
   },
-  logoTextWhite: {
-    fontSize: 56,
+  logoTextGradient: {
+    fontSize: 64,
     fontWeight: '300',
-    letterSpacing: 2,
+    letterSpacing: 3,
     color: '#FFFFFF',
   },
   h1White: {
@@ -901,12 +1048,14 @@ const styles = StyleSheet.create({
   featureSection: {
     width: '100%',
     marginBottom: 16,
+    paddingHorizontal: 20,
   },
   featureLabel: {
     fontSize: 16,
     fontWeight: '600',
     color: COLORS.textOnBase,
     marginBottom: 12,
+    textAlign: 'left',
   },
   careCard: {
     flexDirection: 'row',
@@ -936,6 +1085,24 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: COLORS.textSecondary,
   },
+  taskRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  checkbox: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    borderWidth: 2,
+    borderColor: COLORS.border,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: COLORS.surface,
+  },
+  checkboxDone: {
+    backgroundColor: COLORS.primary,
+    borderColor: COLORS.primary,
+  },
   aiConsultButton: {
     backgroundColor: COLORS.accent,
     paddingHorizontal: 24,
@@ -948,11 +1115,42 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
   },
+  chatCard: {
+    backgroundColor: COLORS.surface,
+    borderRadius: 16,
+    marginTop: 16,
+    marginHorizontal: 0,
+    paddingVertical: 20,
+    paddingHorizontal: 16,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+    width: '100%',
+  },
+  chatCardHeader: {
+    marginBottom: 16,
+  },
+  chatCardTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: COLORS.textOnBase,
+  },
+  chatCardContent: {
+    gap: 12,
+    paddingBottom: 8,
+  },
   // モーダル（AI相談）
   modalBackdrop: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.5)',
-    justifyContent: 'flex-end',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
   },
   modalSheet: {
     backgroundColor: COLORS.background,
@@ -960,6 +1158,21 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     padding: 20,
+  },
+  modalPopup: {
+    backgroundColor: COLORS.background,
+    width: '90%',
+    maxHeight: '70%',
+    borderRadius: 24,
+    padding: 20,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 10,
+    elevation: 10,
   },
   modalHeader: {
     flexDirection: 'row',
@@ -993,11 +1206,11 @@ const styles = StyleSheet.create({
   },
   chatBubbleAI: {
     alignSelf: 'flex-start',
-    backgroundColor: COLORS.surface,
+    backgroundColor: '#E8E8E8',
     padding: 12,
     borderRadius: 16,
     borderBottomLeftRadius: 4,
-    maxWidth: '85%',
+    maxWidth: '80%',
   },
   chatTextAI: {
     color: COLORS.textOnBase,
@@ -1039,14 +1252,14 @@ const styles = StyleSheet.create({
   },
   // CTAボタン
   primaryCta: {
-    backgroundColor: COLORS.primary,
+    backgroundColor: COLORS.accent,
     borderRadius: 24,
     paddingVertical: 14,
     alignItems: 'center',
     justifyContent: 'center',
   },
   primaryCtaText: {
-    color: COLORS.textOnPrimary,
+    color: COLORS.textOnAccent,
     fontSize: 16,
     fontWeight: 'bold',
   },

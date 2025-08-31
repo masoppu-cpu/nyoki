@@ -25,49 +25,75 @@ const BeforeAfterSlider: React.FC<BeforeAfterSliderProps> = ({
   const [sliderPosition, setSliderPosition] = useState(initialPos);
   const sliderAnim = useRef(new Animated.Value(initialPos)).current;
 
-  const panResponder = PanResponder.create({
-    onStartShouldSetPanResponder: () => true,
-    onMoveShouldSetPanResponder: () => true,
+  const panResponder = useMemo(() => PanResponder.create({
+    onStartShouldSetPanResponder: () => false,
+    onMoveShouldSetPanResponder: (evt, gestureState) => {
+      // Only capture if it's a deliberate horizontal drag with minimal vertical movement
+      const isHorizontalDrag = Math.abs(gestureState.dx) > 10 && Math.abs(gestureState.dy) < 5;
+      // And only if starting near the slider handle
+      const touchX = gestureState.x0;
+      const handleX = sliderPosition;
+      const isNearHandle = Math.abs(touchX - handleX) < 40;
+      return isHorizontalDrag && isNearHandle;
+    },
     onPanResponderGrant: () => {
       onInteractionStart?.();
     },
     onPanResponderMove: (_, gestureState) => {
       const newPosition = Math.max(0, Math.min(screenWidth, gestureState.moveX));
-      setSliderPosition(newPosition);
       sliderAnim.setValue(newPosition);
+      // 次のレンダーサイクルで状態を更新
+      requestAnimationFrame(() => {
+        setSliderPosition(newPosition);
+      });
     },
     onPanResponderRelease: () => {
       // snap to edges for 0-10% and 90-100%
-      const ratio = sliderPosition / screenWidth;
+      const ratio = sliderAnim._value / screenWidth;
       if (ratio <= 0.1) {
-        Animated.timing(sliderAnim, { toValue: 0, duration: 160, useNativeDriver: false }).start(() => setSliderPosition(0));
+        Animated.timing(sliderAnim, { toValue: 0, duration: 160, useNativeDriver: false }).start(() => {
+          requestAnimationFrame(() => setSliderPosition(0));
+        });
       } else if (ratio >= 0.9) {
-        Animated.timing(sliderAnim, { toValue: screenWidth, duration: 160, useNativeDriver: false }).start(() => setSliderPosition(screenWidth));
+        Animated.timing(sliderAnim, { toValue: screenWidth, duration: 160, useNativeDriver: false }).start(() => {
+          requestAnimationFrame(() => setSliderPosition(screenWidth));
+        });
+      } else {
+        requestAnimationFrame(() => setSliderPosition(sliderAnim._value));
       }
       onInteractionEnd?.();
     },
-  });
+  }), [screenWidth, sliderPosition, onInteractionStart, onInteractionEnd]);
 
   // Auto-animate from -> to when requested
   useEffect(() => {
     if (!autoAnimate) return;
     const fromPos = Math.max(0, Math.min(1, autoAnimate.from)) * screenWidth;
     const toPos = Math.max(0, Math.min(1, autoAnimate.to)) * screenWidth;
+    
+    // 初期位置を設定
     sliderAnim.setValue(fromPos);
-    setSliderPosition(fromPos);
+    requestAnimationFrame(() => {
+      setSliderPosition(fromPos);
+    });
+    
     const t = setTimeout(() => {
       Animated.timing(sliderAnim, {
         toValue: toPos,
         duration: autoAnimate.duration ?? 1600,
         easing: Easing.inOut(Easing.ease),
         useNativeDriver: false,
-      }).start(() => setSliderPosition(toPos));
+      }).start(() => {
+        requestAnimationFrame(() => {
+          setSliderPosition(toPos);
+        });
+      });
     }, autoAnimate.delay ?? 0);
     return () => clearTimeout(t);
-  }, [screenWidth, autoAnimate?.from, autoAnimate?.to, autoAnimate?.duration, autoAnimate?.delay]);
+  }, [screenWidth, autoAnimate?.from, autoAnimate?.to, autoAnimate?.duration, autoAnimate?.delay, sliderAnim]);
 
   return (
-    <View style={styles.container}>
+    <View style={styles.container} {...panResponder.panHandlers}>
       {/* Show AFTER on the right: use it as the background */}
       <Image source={afterImage} style={styles.fullImage} resizeMode="cover" />
       {/* Show BEFORE on the left: clip to slider position */}
@@ -77,7 +103,6 @@ const BeforeAfterSlider: React.FC<BeforeAfterSliderProps> = ({
       <Text style={[styles.label, styles.beforeLabel]}>Before</Text>
       <Text style={[styles.label, styles.afterLabel]}>After</Text>
       <View
-        {...panResponder.panHandlers}
         style={[styles.sliderHandle, { left: (sliderPosition as number) - 20 }]}
       >
         <View style={styles.sliderLine} />
