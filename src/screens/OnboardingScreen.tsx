@@ -680,10 +680,10 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onComplete }
       resizeMode="cover"
     >
       <View style={styles.dimOverlay} />
-      <View style={[styles.centerContent, { width: '100%' }]}>
+      <View style={styles.centerContent}>
         <Text style={styles.h1White}>写真一枚で</Text>
         <Text style={styles.h1White}>理想の植物を見つけよう</Text>
-        <View style={{ marginTop: 32, width: '75%' }}>
+        <View style={{ marginTop: 32, alignItems: 'center', width: '100%' }}>
           <TouchableOpacity
             style={styles.primaryCta}
             onPress={completeOnboarding}
@@ -1255,8 +1255,10 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.accent,
     borderRadius: 24,
     paddingVertical: 14,
+    paddingHorizontal: 60,
     alignItems: 'center',
     justifyContent: 'center',
+    minWidth: 200,
   },
   primaryCtaText: {
     color: COLORS.textOnAccent,
@@ -1267,8 +1269,10 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255,255,255,0.9)',
     borderRadius: 24,
     paddingVertical: 14,
+    paddingHorizontal: 60,
     alignItems: 'center',
     justifyContent: 'center',
+    minWidth: 200,
   },
   secondaryCtaText: {
     color: COLORS.textOnBase,
