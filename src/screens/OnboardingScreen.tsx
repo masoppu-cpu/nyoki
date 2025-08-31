@@ -1077,14 +1077,14 @@ const styles = StyleSheet.create({
   },
   // CTAボタン
   primaryCta: {
-    backgroundColor: COLORS.primary,
+    backgroundColor: COLORS.accent,
     borderRadius: 24,
     paddingVertical: 14,
     alignItems: 'center',
     justifyContent: 'center',
   },
   primaryCtaText: {
-    color: COLORS.textOnPrimary,
+    color: COLORS.textOnAccent,
     fontSize: 16,
     fontWeight: 'bold',
   },
