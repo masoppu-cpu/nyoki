@@ -130,7 +130,7 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onComplete }
               <Animated.View style={{ opacity: logoOpacity }}>
                 <Text style={styles.logoTextGradient}>nyoki</Text>
               </Animated.View>
-              {splashComplete && (
+              {canTap && (
                 <Animated.Text
                   style={[
                     styles.tapHint,
