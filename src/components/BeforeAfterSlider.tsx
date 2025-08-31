@@ -26,8 +26,16 @@ const BeforeAfterSlider: React.FC<BeforeAfterSliderProps> = ({
   const sliderAnim = useRef(new Animated.Value(initialPos)).current;
 
   const panResponder = useMemo(() => PanResponder.create({
-    onStartShouldSetPanResponder: () => true,
-    onMoveShouldSetPanResponder: () => true,
+    onStartShouldSetPanResponder: () => false,
+    onMoveShouldSetPanResponder: (evt, gestureState) => {
+      // Only capture if it's a deliberate horizontal drag with minimal vertical movement
+      const isHorizontalDrag = Math.abs(gestureState.dx) > 10 && Math.abs(gestureState.dy) < 5;
+      // And only if starting near the slider handle
+      const touchX = gestureState.x0;
+      const handleX = sliderPosition;
+      const isNearHandle = Math.abs(touchX - handleX) < 40;
+      return isHorizontalDrag && isNearHandle;
+    },
     onPanResponderGrant: () => {
       onInteractionStart?.();
     },
@@ -55,7 +63,7 @@ const BeforeAfterSlider: React.FC<BeforeAfterSliderProps> = ({
       }
       onInteractionEnd?.();
     },
-  }), [screenWidth, onInteractionStart, onInteractionEnd]);
+  }), [screenWidth, sliderPosition, onInteractionStart, onInteractionEnd]);
 
   // Auto-animate from -> to when requested
   useEffect(() => {
@@ -85,7 +93,7 @@ const BeforeAfterSlider: React.FC<BeforeAfterSliderProps> = ({
   }, [screenWidth, autoAnimate?.from, autoAnimate?.to, autoAnimate?.duration, autoAnimate?.delay, sliderAnim]);
 
   return (
-    <View style={styles.container}>
+    <View style={styles.container} {...panResponder.panHandlers}>
       {/* Show AFTER on the right: use it as the background */}
       <Image source={afterImage} style={styles.fullImage} resizeMode="cover" />
       {/* Show BEFORE on the left: clip to slider position */}
@@ -95,7 +103,6 @@ const BeforeAfterSlider: React.FC<BeforeAfterSliderProps> = ({
       <Text style={[styles.label, styles.beforeLabel]}>Before</Text>
       <Text style={[styles.label, styles.afterLabel]}>After</Text>
       <View
-        {...panResponder.panHandlers}
         style={[styles.sliderHandle, { left: (sliderPosition as number) - 20 }]}
       >
         <View style={styles.sliderLine} />
