@@ -5,9 +5,11 @@ interface SubscriptionStatus {
   plantsCount: number;
   analysisCount: number;
   consultationCount: number;
+  arGenerationCount: number;
   canAddMorePlants: boolean;
   canAnalyze: boolean;
   canConsult: boolean;
+  canGenerateAR: boolean;
 }
 
 class SubscriptionService {
@@ -16,9 +18,11 @@ class SubscriptionService {
     plantsCount: 0,
     analysisCount: 0,
     consultationCount: 0,
+    arGenerationCount: 0,
     canAddMorePlants: true,
     canAnalyze: true,
     canConsult: true,
+    canGenerateAR: true,
   };
 
   async checkSubscriptionStatus(userId: string): Promise<SubscriptionStatus> {
@@ -31,6 +35,7 @@ class SubscriptionService {
       canAddMorePlants: this.userStatus.isPremium || this.userStatus.plantsCount < SUBSCRIPTION.MAX_FREE_PLANTS,
       canAnalyze: this.userStatus.isPremium || this.userStatus.analysisCount < SUBSCRIPTION.MAX_FREE_AI_ANALYSIS,
       canConsult: this.userStatus.isPremium || this.userStatus.consultationCount < SUBSCRIPTION.MAX_FREE_AI_CONSULTATION,
+      canGenerateAR: this.userStatus.isPremium || this.userStatus.arGenerationCount < SUBSCRIPTION.MAX_FREE_AR_GENERATION,
     };
 
     return this.userStatus;
@@ -46,6 +51,7 @@ class SubscriptionService {
       canAddMorePlants: true,
       canAnalyze: true,
       canConsult: true,
+      canGenerateAR: true,
     };
 
     return true;
@@ -85,11 +91,41 @@ class SubscriptionService {
       this.userStatus.isPremium || this.userStatus.consultationCount < SUBSCRIPTION.MAX_FREE_AI_CONSULTATION;
   }
 
+  incrementARGenerationCount(): void {
+    this.userStatus.arGenerationCount += 1;
+    this.userStatus.canGenerateAR = 
+      this.userStatus.isPremium || this.userStatus.arGenerationCount < SUBSCRIPTION.MAX_FREE_AR_GENERATION;
+  }
+
   resetMonthlyLimits(): void {
     this.userStatus.analysisCount = 0;
     this.userStatus.consultationCount = 0;
+    this.userStatus.arGenerationCount = 0;
     this.userStatus.canAnalyze = true;
     this.userStatus.canConsult = true;
+    this.userStatus.canGenerateAR = true;
+  }
+
+  async checkPlantLimit(): Promise<boolean> {
+    const status = this.getStatus();
+    
+    if (!status.isPremium && !status.canAddMorePlants) {
+      return new Promise((resolve) => {
+        import('react-native').then(({ Alert }) => {
+          Alert.alert(
+            '無料プランの制限',
+            '無料プランでは5つまでの植物を管理できます。\nもっと多くの植物を管理するにはプレミアムプランにアップグレードしてください。',
+            [
+              { text: 'OK', style: 'cancel', onPress: () => resolve(false) },
+              { text: 'アップグレード', onPress: () => {
+                this.upgradeToPremium().then(() => resolve(true));
+              }}
+            ]
+          );
+        });
+      });
+    }
+    return true;
   }
 
   getStatus(): SubscriptionStatus {

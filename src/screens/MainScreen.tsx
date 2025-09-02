@@ -2,28 +2,42 @@ import React, { useState } from 'react';
 import { View, StyleSheet, SafeAreaView } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { COLORS } from '../config/constants';
-import { AppView, PurchaseListItem } from '../types';
+import { AppView, PurchaseListItem, Plant } from '../types';
 import TabBar from '../components/TabBar';
 import HomeScreen from './HomeScreen';
 import MyPlantsScreen from './MyPlantsScreen';
 import PlantSelectionScreen from './PlantSelectionScreen';
 import PurchaseListScreen from './PurchaseListScreen';
+import ARPreviewScreen from './ARPreviewScreen';
 
 const MainScreen: React.FC = () => {
   const [selectedTab, setSelectedTab] = useState(0);
   const [currentView, setCurrentView] = useState<AppView>('home');
   const [purchaseListItems, setPurchaseListItems] = useState<PurchaseListItem[]>([]);
+  const [arPreviewData, setArPreviewData] = useState<{
+    roomImage: string;
+    selectedPlants: Plant[];
+  } | null>(null);
 
   const handleTabPress = (index: number, view: AppView) => {
     setSelectedTab(index);
     setCurrentView(view);
   };
 
-  const handleNavigate = (screen: string) => {
+  const handleNavigate = (screen: string, data?: any) => {
     switch (screen) {
       case 'capture':
         // TODO: カメラ画面への遷移実装
         console.log('Navigate to camera screen');
+        break;
+      case 'ar-preview':
+        if (data?.roomImage && data?.selectedPlants) {
+          setArPreviewData({
+            roomImage: data.roomImage,
+            selectedPlants: data.selectedPlants
+          });
+          setCurrentView('ar-preview');
+        }
         break;
       case 'shop':
         setSelectedTab(2);
@@ -82,6 +96,29 @@ const MainScreen: React.FC = () => {
             }}
           />
         );
+      case 'ar-preview':
+        if (arPreviewData) {
+          return (
+            <ARPreviewScreen
+              roomImage={arPreviewData.roomImage}
+              selectedPlants={arPreviewData.selectedPlants}
+              onConfirm={() => {
+                // Navigate to purchase list with confirmed plants
+                arPreviewData.selectedPlants.forEach(plant => {
+                  handleAddToPurchaseList(plant);
+                });
+                setSelectedTab(3);
+                setCurrentView('purchase-list');
+                setArPreviewData(null);
+              }}
+              onBack={() => {
+                setCurrentView('home');
+                setArPreviewData(null);
+              }}
+            />
+          );
+        }
+        return <HomeScreen onNavigate={handleNavigate} />;
       default:
         return <HomeScreen onNavigate={handleNavigate} />;
     }
