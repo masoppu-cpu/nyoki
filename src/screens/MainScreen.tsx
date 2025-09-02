@@ -9,6 +9,7 @@ import MyPlantsScreen from './MyPlantsScreen';
 import PlantSelectionScreen from './PlantSelectionScreen';
 import PurchaseListScreen from './PurchaseListScreen';
 import ARPreviewScreen from './ARPreviewScreen';
+import RecommendationScreen from './RecommendationScreen';
 
 const MainScreen: React.FC = () => {
   const [selectedTab, setSelectedTab] = useState(0);
@@ -17,6 +18,10 @@ const MainScreen: React.FC = () => {
   const [arPreviewData, setArPreviewData] = useState<{
     roomImage: string;
     selectedPlants: Plant[];
+  } | null>(null);
+  const [recommendationData, setRecommendationData] = useState<{
+    recommendedPlants: Plant[];
+    roomImage: string;
   } | null>(null);
 
   const handleTabPress = (index: number, view: AppView) => {
@@ -29,6 +34,15 @@ const MainScreen: React.FC = () => {
       case 'capture':
         // TODO: カメラ画面への遷移実装
         console.log('Navigate to camera screen');
+        break;
+      case 'recommendations':
+        if (data?.recommendedPlants) {
+          setRecommendationData({
+            recommendedPlants: data.recommendedPlants,
+            roomImage: data.roomImage || require('../../assets/images/room-before.jpg')
+          });
+          setCurrentView('recommendations');
+        }
         break;
       case 'ar-preview':
         if (data?.roomImage && data?.selectedPlants) {
@@ -71,6 +85,25 @@ const MainScreen: React.FC = () => {
         return <HomeScreen onNavigate={handleNavigate} />;
       case 'my-plants':
         return <MyPlantsScreen />;
+      case 'recommendations':
+        if (recommendationData) {
+          return (
+            <RecommendationScreen
+              recommendedPlants={recommendationData.recommendedPlants}
+              onAddToPurchaseList={handleAddToPurchaseList}
+              onBack={() => {
+                setCurrentView('home');
+                setRecommendationData(null);
+              }}
+              onNavigateToShop={() => {
+                setSelectedTab(2);
+                setCurrentView('shop');
+              }}
+              onNavigateToARPreview={(data) => handleNavigate('ar-preview', data)}
+            />
+          );
+        }
+        return <HomeScreen onNavigate={handleNavigate} />;
       case 'shop':
         return (
           <PlantSelectionScreen
