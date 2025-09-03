@@ -8,7 +8,6 @@ import HomeScreen from './HomeScreen';
 import MyPlantsScreen from './MyPlantsScreen';
 import PlantSelectionScreen from './PlantSelectionScreen';
 import PurchaseListScreen from './PurchaseListScreen';
-import ARPreviewScreen from './ARPreviewScreen';
 import RecommendationScreen from './RecommendationScreen';
 import CameraScreen from './CameraScreen';
 import AnalysisScreen from './AnalysisScreen';
@@ -17,10 +16,6 @@ const MainScreen: React.FC = () => {
   const [selectedTab, setSelectedTab] = useState(0);
   const [currentView, setCurrentView] = useState<AppView>('home');
   const [purchaseListItems, setPurchaseListItems] = useState<PurchaseListItem[]>([]);
-  const [arPreviewData, setArPreviewData] = useState<{
-    roomImage: string;
-    selectedPlants: Plant[];
-  } | null>(null);
   const [recommendationData, setRecommendationData] = useState<{
     recommendedPlants: Plant[];
     roomImage: string;
@@ -46,15 +41,6 @@ const MainScreen: React.FC = () => {
             roomImage: data.roomImage || require('../../assets/images/room-before.jpg')
           });
           setCurrentView('recommendations');
-        }
-        break;
-      case 'ar-preview':
-        if (data?.roomImage && data?.selectedPlants) {
-          setArPreviewData({
-            roomImage: data.roomImage,
-            selectedPlants: data.selectedPlants
-          });
-          setCurrentView('ar-preview');
         }
         break;
       case 'shop':
@@ -132,7 +118,6 @@ const MainScreen: React.FC = () => {
                 setSelectedTab(2);
                 setCurrentView('shop');
               }}
-              onNavigateToARPreview={(data) => handleNavigate('ar-preview', data)}
             />
           );
         }
@@ -162,29 +147,6 @@ const MainScreen: React.FC = () => {
             }}
           />
         );
-      case 'ar-preview':
-        if (arPreviewData) {
-          return (
-            <ARPreviewScreen
-              roomImage={arPreviewData.roomImage}
-              selectedPlants={arPreviewData.selectedPlants}
-              onConfirm={() => {
-                // Navigate to purchase list with confirmed plants
-                arPreviewData.selectedPlants.forEach(plant => {
-                  handleAddToPurchaseList(plant);
-                });
-                setSelectedTab(3);
-                setCurrentView('purchase-list');
-                setArPreviewData(null);
-              }}
-              onBack={() => {
-                setCurrentView('home');
-                setArPreviewData(null);
-              }}
-            />
-          );
-        }
-        return <HomeScreen onNavigate={handleNavigate} />;
       default:
         return <HomeScreen onNavigate={handleNavigate} />;
     }

@@ -1,5 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { View, Text, StyleSheet, Animated } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { COLORS, FONT_SIZE, SPACING } from '../config/constants';
 
 interface AnalysisScreenProps {
@@ -9,9 +10,42 @@ interface AnalysisScreenProps {
 const AnalysisScreen: React.FC<AnalysisScreenProps> = ({ onAnalysisComplete }) => {
   const [progress, setProgress] = useState(0);
   const [statusText, setStatusText] = useState('お部屋を分析中...');
-  const progressAnim = new Animated.Value(0);
+  const progressAnim = useRef(new Animated.Value(0)).current;
+  const fadeAnim = useRef(new Animated.Value(0.5)).current;
+  const scaleAnim = useRef(new Animated.Value(0.9)).current;
+  const bulbBounceAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
+    // 優しくフェードイン/アウトするアニメーション
+    Animated.loop(
+      Animated.parallel([
+        Animated.sequence([
+          Animated.timing(fadeAnim, {
+            toValue: 1,
+            duration: 1500,
+            useNativeDriver: true,
+          }),
+          Animated.timing(fadeAnim, {
+            toValue: 0.5,
+            duration: 1500,
+            useNativeDriver: true,
+          }),
+        ]),
+        Animated.sequence([
+          Animated.timing(scaleAnim, {
+            toValue: 1.1,
+            duration: 1500,
+            useNativeDriver: true,
+          }),
+          Animated.timing(scaleAnim, {
+            toValue: 0.9,
+            duration: 1500,
+            useNativeDriver: true,
+          }),
+        ]),
+      ])
+    ).start();
+
     const interval = setInterval(() => {
       setProgress((prev) => {
         if (prev >= 100) {
@@ -29,7 +63,23 @@ const AnalysisScreen: React.FC<AnalysisScreenProps> = ({ onAnalysisComplete }) =
     setTimeout(() => setStatusText('レイアウトを最適化中...'), 12000);
 
     return () => clearInterval(interval);
-  }, [onAnalysisComplete]);
+    // 豆電球のバウンスアニメーション
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(bulbBounceAnim, {
+          toValue: -8,
+          duration: 400,
+          useNativeDriver: true,
+        }),
+        Animated.timing(bulbBounceAnim, {
+          toValue: 0,
+          duration: 400,
+          useNativeDriver: true,
+        }),
+        Animated.delay(1200),
+      ])
+    ).start();
+  }, [onAnalysisComplete, fadeAnim, scaleAnim, bulbBounceAnim]);
 
   useEffect(() => {
     Animated.timing(progressAnim, {
@@ -37,16 +87,21 @@ const AnalysisScreen: React.FC<AnalysisScreenProps> = ({ onAnalysisComplete }) =
       duration: 500,
       useNativeDriver: false,
     }).start();
-  }, [progress]);
+  }, [progress, progressAnim]);
+
 
   return (
     <View style={styles.container}>
       <View style={styles.content}>
         <View style={styles.animationContainer}>
-          <View style={styles.plantIcon}>
-            <Text style={styles.plantEmoji}>🌿</Text>
-          </View>
-          <View style={styles.circleAnimation} />
+          <Animated.View
+            style={{
+              opacity: fadeAnim,
+              transform: [{ scale: scaleAnim }],
+            }}
+          >
+            <Ionicons name="leaf-outline" size={56} color={COLORS.primary} />
+          </Animated.View>
         </View>
 
         <Text style={styles.title}>AI分析中</Text>
@@ -70,7 +125,16 @@ const AnalysisScreen: React.FC<AnalysisScreenProps> = ({ onAnalysisComplete }) =
         </View>
 
         <View style={styles.tips}>
-          <Text style={styles.tipTitle}>豆知識</Text>
+          <View style={styles.tipHeader}>
+            <Animated.View
+              style={{
+                transform: [{ translateY: bulbBounceAnim }],
+              }}
+            >
+              <Ionicons name="bulb-outline" size={20} color={COLORS.warning} />
+            </Animated.View>
+            <Text style={styles.tipTitle}>豆知識</Text>
+          </View>
           <Text style={styles.tipText}>
             観葉植物は空気を浄化し、{'\n'}
             ストレスを軽減する効果があります
@@ -98,27 +162,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: SPACING.xl,
-  },
-  plantIcon: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: COLORS.primary,
-    justifyContent: 'center',
-    alignItems: 'center',
-    zIndex: 2,
-  },
-  plantEmoji: {
-    fontSize: 40,
-  },
-  circleAnimation: {
-    position: 'absolute',
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    borderWidth: 2,
-    borderColor: COLORS.primary,
-    opacity: 0.3,
   },
   title: {
     fontSize: FONT_SIZE.xxl,
@@ -159,11 +202,16 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     width: '100%',
   },
+  tipHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: SPACING.xs,
+    gap: 6,
+  },
   tipTitle: {
     fontSize: FONT_SIZE.sm,
     fontWeight: '600',
     color: COLORS.primary,
-    marginBottom: SPACING.xs,
   },
   tipText: {
     fontSize: FONT_SIZE.sm,
