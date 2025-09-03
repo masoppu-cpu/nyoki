@@ -94,8 +94,9 @@ const MyPlantsScreen: React.FC = () => {
   const [selectedPlant, setSelectedPlant] = useState<UserPlant | null>(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
 
-  // 水やりが必要な植物の数を計算
-  const plantsNeedingWater = plants.filter(p => p.daysUntilWatering === 0).length;
+  // 水やりが必要な植物とそれ以外を分ける
+  const plantsNeedingWater = plants.filter(p => p.daysUntilWatering === 0);
+  const otherPlants = plants.filter(p => p.daysUntilWatering > 0);
 
   const handlePlantPress = (plant: UserPlant) => {
     setSelectedPlant(plant);
@@ -140,27 +141,68 @@ const MyPlantsScreen: React.FC = () => {
           <Text style={styles.title}>My Plants</Text>
           <Text style={styles.subtitle}>
             {plants.length}個の植物を管理中
-            {plantsNeedingWater > 0 && ` • ${plantsNeedingWater}個が水やり必要`}
+            {plantsNeedingWater.length > 0 && ` • ${plantsNeedingWater.length}個が水やり必要`}
           </Text>
         </View>
 
-        {/* 水やりリマインダー */}
-        {plantsNeedingWater > 0 && (
-          <View style={styles.reminderCard}>
-            <Ionicons name="water" size={24} color={COLORS.primary} />
-            <View style={styles.reminderText}>
-              <Text style={styles.reminderTitle}>水やりリマインダー</Text>
-              <Text style={styles.reminderSubtitle}>
-                {plants.filter(p => p.daysUntilWatering === 0).map(p => p.nickname || p.name).join('、')}
-                に水やりが必要です
-              </Text>
+        {/* 水やりが必要な植物セクション */}
+        {plantsNeedingWater.length > 0 && (
+          <>
+            <View style={styles.sectionHeader}>
+              <View style={styles.sectionIconContainer}>
+                <Ionicons name="water" size={20} color={COLORS.background} />
+              </View>
+              <Text style={styles.sectionTitle}>今日の水やり</Text>
+              <View style={styles.badge}>
+                <Text style={styles.badgeText}>{plantsNeedingWater.length}</Text>
+              </View>
             </View>
-          </View>
+
+            <View style={styles.plantGrid}>
+              {plantsNeedingWater.map((plant) => {
+                const waterStatus = getWateringStatus(plant.daysUntilWatering);
+                return (
+                  <TouchableOpacity
+                    key={plant.id}
+                    style={[styles.plantCard, styles.urgentCard]}
+                    onPress={() => handlePlantPress(plant)}
+                  >
+                    <Image source={plant.image} style={styles.plantImage} />
+                    <View style={styles.plantInfo}>
+                      <View style={styles.plantHeader}>
+                        <Text style={styles.plantName} numberOfLines={1}>
+                          {plant.nickname || plant.name}
+                        </Text>
+                        {getHealthIcon(plant.health)}
+                      </View>
+                      <Text style={styles.plantLocation}>{plant.location}</Text>
+                      <View style={styles.wateringInfo}>
+                        <Ionicons name="water-outline" size={16} color={waterStatus.color} />
+                        <Text style={[styles.wateringText, { color: waterStatus.color }]}>
+                          {waterStatus.text}
+                        </Text>
+                      </View>
+                    </View>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+          </>
         )}
 
-        {/* 植物リスト */}
+        {/* すべての植物セクション */}
+        <View style={styles.sectionHeader}>
+          <View style={[styles.sectionIconContainer, { backgroundColor: COLORS.textSecondary }]}>
+            <Ionicons name="leaf" size={20} color={COLORS.background} />
+          </View>
+          <Text style={styles.sectionTitle}>すべての植物</Text>
+          <View style={[styles.badge, { backgroundColor: COLORS.surface }]}>
+            <Text style={[styles.badgeText, { color: COLORS.textSecondary }]}>{otherPlants.length}</Text>
+          </View>
+        </View>
+
         <View style={styles.plantGrid}>
-          {plants.map((plant) => {
+          {otherPlants.map((plant) => {
             const waterStatus = getWateringStatus(plant.daysUntilWatering);
             return (
               <TouchableOpacity
@@ -229,30 +271,39 @@ const styles = StyleSheet.create({
     fontSize: FONT_SIZE.md,
     color: COLORS.textSecondary,
   },
-  reminderCard: {
+  sectionHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#E6F4EA',
-    marginHorizontal: SPACING.lg,
-    marginBottom: SPACING.lg,
-    padding: SPACING.md,
-    borderRadius: BORDER_RADIUS.md,
-    borderLeftWidth: 4,
-    borderLeftColor: COLORS.primary,
+    paddingHorizontal: SPACING.lg,
+    paddingVertical: SPACING.sm,
+    marginTop: SPACING.md,
+    marginBottom: SPACING.sm,
   },
-  reminderText: {
-    flex: 1,
-    marginLeft: SPACING.sm,
+  sectionIconContainer: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: COLORS.primary,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: SPACING.sm,
   },
-  reminderTitle: {
-    fontSize: FONT_SIZE.md,
+  sectionTitle: {
+    fontSize: FONT_SIZE.lg,
     fontWeight: '600',
     color: COLORS.text,
+    flex: 1,
   },
-  reminderSubtitle: {
+  badge: {
+    backgroundColor: '#FFF3E0',
+    paddingHorizontal: SPACING.sm,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  badgeText: {
     fontSize: FONT_SIZE.sm,
-    color: COLORS.textSecondary,
-    marginTop: 2,
+    fontWeight: '600',
+    color: COLORS.warning,
   },
   plantGrid: {
     paddingHorizontal: SPACING.lg,
@@ -268,6 +319,11 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
+  },
+  urgentCard: {
+    borderLeftWidth: 4,
+    borderLeftColor: COLORS.error,
+    backgroundColor: '#FFF5F5',
   },
   plantImage: {
     width: 100,
