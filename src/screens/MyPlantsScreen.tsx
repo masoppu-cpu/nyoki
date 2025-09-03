@@ -216,7 +216,7 @@ const MyPlantsScreen: React.FC = () => {
                           </>
                         ) : (
                           <>
-                            <Ionicons name="water" size={18} color="#FFFFFF" />
+                            <Ionicons name="water" size={18} color="#4FC3F7" />
                             <Text style={styles.waterButtonText}>水やり</Text>
                           </>
                         )}
@@ -281,7 +281,7 @@ const MyPlantsScreen: React.FC = () => {
                       </>
                     ) : (
                       <>
-                        <Ionicons name="water" size={18} color="#FFFFFF" />
+                        <Ionicons name="water" size={18} color="#4FC3F7" />
                         <Text style={styles.waterButtonText}>水やり</Text>
                       </>
                     )}
@@ -455,8 +455,9 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   waterButton: {
-    backgroundColor: '#4FC3F7',
-    borderWidth: 0,
+    backgroundColor: 'transparent',
+    borderWidth: 1.5,
+    borderColor: '#4FC3F7',
   },
   aiButton: {
     backgroundColor: COLORS.primary,
@@ -469,7 +470,7 @@ const styles = StyleSheet.create({
   },
   waterButtonText: {
     fontSize: 11,
-    color: '#FFFFFF',
+    color: '#4FC3F7',
     fontWeight: '600',
   },
   aiButtonText: {
