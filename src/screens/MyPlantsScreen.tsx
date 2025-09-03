@@ -206,7 +206,7 @@ const MyPlantsScreen: React.FC = () => {
                     </View>
                     <View style={styles.actionButtons}>
                       <TouchableOpacity 
-                        style={[styles.actionButton, wateredPlants.has(plant.id) && styles.wateredButton]}
+                        style={[styles.actionButton, styles.waterButton, wateredPlants.has(plant.id) && styles.wateredButton]}
                         onPress={(e) => handleQuickWater(plant, e)}
                       >
                         {wateredPlants.has(plant.id) ? (
@@ -216,17 +216,17 @@ const MyPlantsScreen: React.FC = () => {
                           </>
                         ) : (
                           <>
-                            <Ionicons name="water" size={18} color={COLORS.primary} />
-                            <Text style={styles.actionButtonText}>水やり</Text>
+                            <Ionicons name="water" size={18} color="#FFFFFF" />
+                            <Text style={styles.waterButtonText}>水やり</Text>
                           </>
                         )}
                       </TouchableOpacity>
                       <TouchableOpacity 
-                        style={styles.actionButton}
+                        style={[styles.actionButton, styles.aiButton]}
                         onPress={(e) => handleQuickAIConsult(plant, e)}
                       >
-                        <Ionicons name="chatbubble-ellipses-outline" size={18} color={COLORS.secondary} />
-                        <Text style={styles.actionButtonText}>AI相談</Text>
+                        <Ionicons name="chatbubble-ellipses-outline" size={18} color="#FFFFFF" />
+                        <Text style={styles.aiButtonText}>AI相談</Text>
                       </TouchableOpacity>
                     </View>
                   </TouchableOpacity>
@@ -271,7 +271,7 @@ const MyPlantsScreen: React.FC = () => {
                 </View>
                 <View style={styles.actionButtons}>
                   <TouchableOpacity 
-                    style={[styles.actionButton, wateredPlants.has(plant.id) && styles.wateredButton]}
+                    style={[styles.actionButton, styles.waterButton, wateredPlants.has(plant.id) && styles.wateredButton]}
                     onPress={(e) => handleQuickWater(plant, e)}
                   >
                     {wateredPlants.has(plant.id) ? (
@@ -281,17 +281,17 @@ const MyPlantsScreen: React.FC = () => {
                       </>
                     ) : (
                       <>
-                        <Ionicons name="water" size={18} color={COLORS.primary} />
-                        <Text style={styles.actionButtonText}>水やり</Text>
+                        <Ionicons name="water" size={18} color="#FFFFFF" />
+                        <Text style={styles.waterButtonText}>水やり</Text>
                       </>
                     )}
                   </TouchableOpacity>
                   <TouchableOpacity 
-                    style={styles.actionButton}
+                    style={[styles.actionButton, styles.aiButton]}
                     onPress={(e) => handleQuickAIConsult(plant, e)}
                   >
-                    <Ionicons name="chatbubble-ellipses-outline" size={18} color={COLORS.secondary} />
-                    <Text style={styles.actionButtonText}>AI相談</Text>
+                    <Ionicons name="chatbubble-ellipses-outline" size={18} color="#FFFFFF" />
+                    <Text style={styles.aiButtonText}>AI相談</Text>
                   </TouchableOpacity>
                 </View>
               </TouchableOpacity>
@@ -389,7 +389,7 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
   },
   urgentCard: {
-    borderLeftWidth: 4,
+    borderLeftWidth: 8,
     borderLeftColor: COLORS.error,
     backgroundColor: '#FFF5F5',
   },
@@ -449,22 +449,33 @@ const styles = StyleSheet.create({
     paddingHorizontal: SPACING.sm,
     paddingVertical: SPACING.xs + 4,
     borderRadius: 12,
-    backgroundColor: COLORS.surface,
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: COLORS.border,
     minWidth: 75,
     gap: 4,
   },
+  waterButton: {
+    backgroundColor: '#4FC3F7',
+    borderWidth: 0,
+  },
+  aiButton: {
+    backgroundColor: COLORS.primary,
+    borderWidth: 0,
+  },
   wateredButton: {
     backgroundColor: '#E8F5E9',
+    borderWidth: 1,
     borderColor: COLORS.success,
   },
-  actionButtonText: {
+  waterButtonText: {
     fontSize: 11,
-    color: COLORS.textSecondary,
-    fontWeight: '500',
+    color: '#FFFFFF',
+    fontWeight: '600',
+  },
+  aiButtonText: {
+    fontSize: 11,
+    color: '#FFFFFF',
+    fontWeight: '600',
   },
   actionButtonTextDone: {
     fontSize: 11,
