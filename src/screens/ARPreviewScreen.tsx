@@ -7,11 +7,12 @@ import {
   ActivityIndicator,
   Share,
   Alert,
-  StyleSheet
+  StyleSheet,
+  Image,
+  Pressable
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as MediaLibrary from 'expo-media-library';
-import BeforeAfterSlider from '../components/BeforeAfterSlider';
 import { aiService } from '../services/ai';
 import { subscriptionService } from '../services/subscription';
 import { Plant } from '../types';
@@ -34,6 +35,7 @@ export const ARPreviewScreen: React.FC<ARPreviewScreenProps> = ({
   const [selectedStyle, setSelectedStyle] = useState<'natural' | 'modern' | 'minimal'>('natural');
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showBefore, setShowBefore] = useState(false);
 
   useEffect(() => {
     generateARImage();
@@ -238,14 +240,26 @@ export const ARPreviewScreen: React.FC<ARPreviewScreenProps> = ({
       
       {generatedImage && (
         <>
-          <View style={styles.sliderContainer}>
-            <BeforeAfterSlider
-              beforeImage={roomImage}
-              afterImage={generatedImage}
-            />
-            <Text style={styles.sliderHint}>
-              ← スライドして比較 →
-            </Text>
+          <View style={styles.imageContainer}>
+            <Pressable
+              onPressIn={() => setShowBefore(true)}
+              onPressOut={() => setShowBefore(false)}
+              style={styles.imageWrapper}
+            >
+              <Image
+                source={{ uri: showBefore ? roomImage : generatedImage }}
+                style={styles.previewImage}
+                resizeMode="cover"
+              />
+              <View style={styles.imageOverlay}>
+                <View style={styles.tapHintContainer}>
+                  <Ionicons name="hand-left-outline" size={20} color="white" />
+                  <Text style={styles.tapHint}>
+                    タップして{showBefore ? 'After' : 'Before'}を確認
+                  </Text>
+                </View>
+              </View>
+            </Pressable>
           </View>
 
           <PlantsSummary />
@@ -380,15 +394,39 @@ const styles = StyleSheet.create({
     color: COLORS.textOnAccent,
     fontWeight: '600',
   },
-  sliderContainer: {
+  imageContainer: {
     marginHorizontal: SPACING.md,
     marginVertical: SPACING.lg,
   },
-  sliderHint: {
-    textAlign: 'center',
-    color: COLORS.textSecondary,
-    marginTop: SPACING.sm,
-    fontSize: FONT_SIZE.xs,
+  imageWrapper: {
+    position: 'relative',
+    borderRadius: BORDER_RADIUS.md,
+    overflow: 'hidden',
+  },
+  previewImage: {
+    width: '100%',
+    aspectRatio: 4 / 3,
+    backgroundColor: COLORS.border,
+  },
+  imageOverlay: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    paddingVertical: SPACING.sm,
+    paddingHorizontal: SPACING.md,
+    backgroundColor: 'rgba(0, 0, 0, 0.4)',
+  },
+  tapHintContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: SPACING.xs,
+  },
+  tapHint: {
+    color: 'white',
+    fontSize: FONT_SIZE.sm,
+    fontWeight: '500',
   },
   plantsSummary: {
     paddingHorizontal: SPACING.md,
