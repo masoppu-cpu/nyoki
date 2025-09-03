@@ -1,36 +1,7 @@
-# チケット #09: ローカル状態管理
-
-**タスクID**: FE-006  
-**担当**: Frontend  
-**推定時間**: 3時間  
-**依存関係**: [COMMON-002: 型定義]  
-**優先度**: 高（Phase 1）
-
-## 概要
-React Context APIを使用したグローバル状態管理の実装。認証、購入検討リスト、植物管理の状態を管理。
-
-注: 本MVPにおける購入導線は「購入検討リスト」を指す（決済は行わない）。実際の購入は外部リンクで行い、
-ユーザー操作で「購入済み」へステータスを切り替えることでアプリ内記録を管理する。
-
-## TODO リスト
-
-- [x] AppContext作成 ✅ 2025-09-03
-- [x] AuthContext実装 ✅ 2025-09-03（統合Context内で実装）
-- [x] PurchaseListContext実装 ✅ 2025-09-03（統合Context内で実装）
-- [x] PlantsContext実装 ✅ 2025-09-03（統合Context内で実装）
-- [x] AsyncStorageでの永続化 ✅ 2025-09-03
-- [x] Context統合 ✅ 2025-09-03（App.tsxにProvider統合）
-- [x] 購入検討リストの永続化（アプリ再起動後も保持） ✅ 2025-09-03
-- [ ] Expo Goでの動作確認
-
-## 実装内容
-
-### AppContext（統合コンテキスト）
-```typescript
-// src/contexts/AppContext.tsx
 import React, { createContext, useContext, useReducer, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Plant, PurchaseListItem, UserPlant, User } from '../types';
+import { Plant, PurchaseListItem, UserPlant } from '../types';
+import { User } from '../types/auth';
 
 interface AppState {
   // 認証
@@ -86,6 +57,13 @@ const initialState: AppState = {
   canAddMorePlants: true,
 };
 
+const calculatePurchaseListTotal = (items: PurchaseListItem[]): number => {
+  // 非決済の参考表示用合計（「検討中」のみ対象）
+  return items
+    .filter(i => i.status === 'considering')
+    .reduce((total, item) => total + (item.plant.price || 0), 0);
+};
+
 const appReducer = (state: AppState, action: AppAction): AppState => {
   switch (action.type) {
     case 'SET_USER':
@@ -93,6 +71,7 @@ const appReducer = (state: AppState, action: AppAction): AppState => {
         ...state,
         user: action.payload,
         isAuthenticated: !!action.payload,
+        isPremium: action.payload?.isPremium || false,
       };
 
     case 'ADD_TO_PURCHASE_LIST': {
@@ -101,7 +80,11 @@ const appReducer = (state: AppState, action: AppAction): AppState => {
       );
       const newItems = exists
         ? state.purchaseListItems
-        : [...state.purchaseListItems, { plant: action.payload, status: 'considering', addedAt: new Date().toISOString() }];
+        : [...state.purchaseListItems, { 
+            plant: action.payload, 
+            status: 'considering', 
+            addedAt: new Date().toISOString() 
+          }];
       return {
         ...state,
         purchaseListItems: newItems,
@@ -123,7 +106,12 @@ const appReducer = (state: AppState, action: AppAction): AppState => {
     case 'MARK_PURCHASED': {
       const newItems = state.purchaseListItems.map(item =>
         item.plant.id === action.payload.plantId && item.status === 'considering'
-          ? { ...item, status: 'purchased', purchasedAt: new Date().toISOString(), externalUrl: action.payload.externalUrl }
+          ? { 
+              ...item, 
+              status: 'purchased' as const, 
+              purchasedAt: new Date().toISOString(), 
+              externalUrl: action.payload.externalUrl 
+            }
           : item
       );
       return {
@@ -206,18 +194,13 @@ const appReducer = (state: AppState, action: AppAction): AppState => {
       return {
         ...state,
         ...action.payload,
+        // Ensure computed fields are recalculated
+        canAddMorePlants: action.payload.isPremium || (action.payload.plantsCount || 0) < 5,
       };
 
     default:
       return state;
   }
-};
-
-const calculatePurchaseListTotal = (items: PurchaseListItem[]): number => {
-  // 非決済の参考表示用合計（「検討中」のみ対象）
-  return items
-    .filter(i => i.status === 'considering')
-    .reduce((total, item) => total + (item.plant.price || 0), 0);
 };
 
 // Context作成
@@ -262,6 +245,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       if (userData) {
         restoredState.user = JSON.parse(userData);
         restoredState.isAuthenticated = true;
+        restoredState.isPremium = restoredState.user!.isPremium;
       }
 
       if (Object.keys(restoredState).length > 0) {
@@ -309,8 +293,10 @@ export const useAuth = () => {
   return {
     user: state.user,
     isAuthenticated: state.isAuthenticated,
+    isPremium: state.isPremium,
     login: (user: User) => dispatch({ type: 'SET_USER', payload: user }),
     logout: () => dispatch({ type: 'SET_USER', payload: null }),
+    setPremiumStatus: (isPremium: boolean) => dispatch({ type: 'SET_PREMIUM_STATUS', payload: isPremium }),
   };
 };
 
@@ -335,113 +321,32 @@ export const useUserPlants = () => {
     plants: state.userPlants,
     count: state.plantsCount,
     canAddMore: state.canAddMorePlants,
+    isPremium: state.isPremium,
     addPlant: (plant: UserPlant) => dispatch({ type: 'ADD_USER_PLANT', payload: plant }),
     updatePlant: (id: string, updates: Partial<UserPlant>) =>
       dispatch({ type: 'UPDATE_USER_PLANT', payload: { id, updates } }),
     removePlant: (id: string) => dispatch({ type: 'REMOVE_USER_PLANT', payload: id }),
   };
 };
-```
 
-### App.tsxでの統合
-```typescript
-// App.tsx の更新
-import { AppProvider } from './src/contexts/AppContext';
-
-export default function App() {
-  return (
-    <AppProvider>
-      <SafeAreaProvider>
-        <StatusBar style="auto" />
-        <MainApp />
-      </SafeAreaProvider>
-    </AppProvider>
-  );
-}
-```
-
-### 使用例
-```typescript
-// コンポーネントでの使用例
-import { usePurchaseList, useAuth, useUserPlants } from '../contexts/AppContext';
-
-const MyComponent = () => {
-  const { items, total, addToPurchaseList } = usePurchaseList();
-  const { user, isAuthenticated } = useAuth();
-  const { plants, canAddMore } = useUserPlants();
-
-  const handleAddToPurchaseList = (plant: Plant) => {
-    if (!canAddMore && !isPremium) {
-      Alert.alert(
-        '制限に達しました',
-        'プレミアムプランで無制限に植物を追加できます'
-      );
-      return;
-    }
-    addToPurchaseList(plant);
+// 追加の便利なフック
+export const useRecommendedPlants = () => {
+  const { state, dispatch } = useAppContext();
+  
+  return {
+    plants: state.recommendedPlants,
+    setRecommendedPlants: (plants: Plant[]) => dispatch({ type: 'SET_RECOMMENDED_PLANTS', payload: plants }),
   };
-
-  // ...
 };
-```
 
-## Expo Goでの動作確認手順
-
-```bash
-# 1. 開発サーバー起動
-npm start
-
-# 2. Expo Goアプリでスキャン
-# iOS: カメラアプリでQRコード読み取り
-# Android: Expo GoアプリでQRコードスキャン
-
-# 3. 確認項目
-- [ ] 購入検討リストに追加できる
-- [ ] アプリを再起動しても購入検討リスト内容が保持される
-- [ ] 植物数制限（5つまで）が動作する
-- [ ] プレミアムプラン状態が管理される
-```
-
-## 完了条件
-- [x] AppContext実装 ✅ 2025-09-03
-- [x] 各種カスタムフック実装 ✅ 2025-09-03
-- [x] AsyncStorage永続化 ✅ 2025-09-03
-- [x] 購入検討リストの永続化（アプリ再起動後も保持） ✅ 2025-09-03
-- [x] 状態復元機能 ✅ 2025-09-03
-- [x] エラーハンドリング ✅ 2025-09-03
-- [ ] Expo Goでの動作確認完了
-
-## 備考
-- Redux不要でシンプルな実装
-- TypeScriptで型安全
-- パフォーマンス考慮（不要な再レンダリング防止）
-
-## 関連ファイル
-- `src/contexts/AppContext.tsx` - 統合コンテキスト（要作成）
-- `src/hooks/useAuth.ts` - 認証フック（✅基本実装済み）
-- `src/hooks/usePlants.ts` - 植物管理フック（✅基本実装済み）
-
-最終更新: 2025-08-28
-
-## Auto-PR（Claude用）
-
-目的:
-- 購入検討リスト中心の状態管理（Context/Hook）の最小実装を追加しPR作成
-
-ブランチ:
-- feat/<TICKET-ID>-state-management
-
-コミット規約:
-- [<TICKET-ID>] で始める
-
-動作確認（最低限）:
-- [ ] 追加/削除/購入済み反映
-- [ ] 永続化（AsyncStorage）
-
-実行手順（Claude）:
-```bash
-git switch -c feat/<TICKET-ID>-state-management
-git add -A && git commit -m "[<TICKET-ID}] add purchase list context"
-git push -u origin feat/<TICKET-ID>-state-management
-gh pr create --fill --base main --head feat/<TICKET-ID>-state-management
-```
+export const useAppUI = () => {
+  const { state, dispatch } = useAppContext();
+  
+  return {
+    isLoading: state.isLoading,
+    error: state.error,
+    currentView: state.currentView,
+    setLoading: (loading: boolean) => dispatch({ type: 'SET_LOADING', payload: loading }),
+    setError: (error: string | null) => dispatch({ type: 'SET_ERROR', payload: error }),
+  };
+};
