@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, StyleSheet, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { COLORS, FONT_SIZE, SPACING, BORDER_RADIUS } from '../config/constants';
-import BeforeAfterSlider from '../components/BeforeAfterSlider';
 import PlantCard from '../components/PlantCard';
 import { Plant } from '../types';
 
@@ -22,6 +21,7 @@ const RecommendationScreen: React.FC<RecommendationScreenProps> = ({
   onNavigateToARPreview,
 }) => {
   const [selectedStyle, setSelectedStyle] = useState<'natural' | 'modern' | 'cozy'>('natural');
+  const [showBefore, setShowBefore] = useState(false);
 
   const getAfterImage = () => {
     switch (selectedStyle) {
@@ -95,14 +95,27 @@ const RecommendationScreen: React.FC<RecommendationScreenProps> = ({
 
         <View style={styles.beforeAfterSection}>
           <Text style={styles.sectionTitle}>Before & After</Text>
-          <BeforeAfterSlider
-            beforeImage={require('../../assets/images/room-before.jpg')}
-            afterImage={getAfterImage()}
-          />
-          <Text style={styles.sliderHint}>
-            <Ionicons name="swap-horizontal" size={16} color={COLORS.textSecondary} />
-            {' '}スライダーを動かして比較
-          </Text>
+          <TouchableOpacity
+            activeOpacity={1}
+            onPressIn={() => setShowBefore(true)}
+            onPressOut={() => setShowBefore(false)}
+            style={styles.beforeAfterContainer}
+          >
+            <Image
+              source={showBefore ? require('../../assets/images/room-before.jpg') : getAfterImage()}
+              style={styles.beforeAfterImage}
+              resizeMode="cover"
+            />
+            <View style={styles.beforeAfterOverlay}>
+              <Text style={styles.beforeAfterLabel}>
+                {showBefore ? 'Before' : 'After'}
+              </Text>
+              <Text style={styles.beforeAfterHint}>
+                <Ionicons name="hand-left-outline" size={16} color="white" />
+                {' '}タップしてBefore/Afterを確認
+              </Text>
+            </View>
+          </TouchableOpacity>
         </View>
 
         <View style={styles.plantsSection}>
@@ -275,6 +288,42 @@ const styles = StyleSheet.create({
     color: COLORS.primary,
     fontWeight: '600',
     marginRight: SPACING.sm,
+  },
+  // Before/After styles
+  beforeAfterContainer: {
+    position: 'relative',
+    width: '100%',
+    aspectRatio: 4 / 3,
+    borderRadius: BORDER_RADIUS.md,
+    overflow: 'hidden',
+    backgroundColor: COLORS.border,
+  },
+  beforeAfterImage: {
+    width: '100%',
+    height: '100%',
+  },
+  beforeAfterOverlay: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.4)',
+    paddingVertical: SPACING.sm,
+    paddingHorizontal: SPACING.md,
+    alignItems: 'center',
+  },
+  beforeAfterLabel: {
+    color: 'white',
+    fontSize: FONT_SIZE.lg,
+    fontWeight: 'bold',
+    marginBottom: 4,
+  },
+  beforeAfterHint: {
+    color: 'white',
+    fontSize: FONT_SIZE.sm,
+    opacity: 0.9,
+    flexDirection: 'row',
+    alignItems: 'center',
   },
 });
 
