@@ -5,6 +5,7 @@ import { initMonitoring, track } from './src/lib/monitoring';
 import { OnboardingScreen } from './src/screens/OnboardingScreen';
 import MainScreen from './src/screens/MainScreen';
 import { COLORS } from './src/config/constants';
+import { AppProvider } from './src/contexts/AppContext';
 // カメラテスト用のインポート（テスト時のみ有効化）
 import TestApp from './TestApp';
 
@@ -43,13 +44,16 @@ export default function App() {
     );
   }
 
-  // オンボーディング画面を表示
-  if (showOnboarding) {
-    return <OnboardingScreen onComplete={() => setShowOnboarding(false)} />;
-  }
-
-  // メインアプリを表示（タブナビゲーション付き）
-  return <MainScreen />;
+  // AppProviderでアプリ全体をラップ
+  return (
+    <AppProvider>
+      {showOnboarding ? (
+        <OnboardingScreen onComplete={() => setShowOnboarding(false)} />
+      ) : (
+        <MainScreen />
+      )}
+    </AppProvider>
+  );
 }
 
 const styles = StyleSheet.create({
