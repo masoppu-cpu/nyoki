@@ -20,7 +20,7 @@ const MOCK_PLANTS: UserPlant[] = [
     daysUntilWatering: 0, // 今日水やり必要
     health: 'warning',
     notes: '葉が少し黄色くなってきた',
-    image: require('../../assets/images/roomAfter.jpg'),
+    image: require('../../assets/images/your-room-after-plant1-optimized.jpg'),
     careInstructions: '週1回の水やり、明るい間接光を好む',
   },
   {
@@ -36,7 +36,7 @@ const MOCK_PLANTS: UserPlant[] = [
     daysUntilWatering: 3,
     health: 'healthy',
     notes: '元気に育っている',
-    image: require('../../assets/images/roomAfterNordic.jpg'),
+    image: require('../../assets/images/your-room-after-plant2-optimized.jpg'),
     careInstructions: '2週間に1回の水やり、乾燥に強い',
   },
   {
@@ -52,7 +52,7 @@ const MOCK_PLANTS: UserPlant[] = [
     daysUntilWatering: 1,
     health: 'healthy',
     notes: '',
-    image: require('../../assets/images/roomBefore.jpg'),
+    image: require('../../assets/images/your-room-after-plant3-optimized.jpg'),
     careInstructions: '週1-2回の水やり、日陰でも育つ',
   },
   {
@@ -68,7 +68,7 @@ const MOCK_PLANTS: UserPlant[] = [
     daysUntilWatering: 5,
     health: 'healthy',
     notes: '新芽が出てきた！',
-    image: require('../../assets/images/roomAfter.jpg'),
+    image: require('../../assets/images/room-after-tropical.jpg'),
     careInstructions: '10日に1回の水やり、明るい場所を好む',
   },
   {
@@ -84,7 +84,7 @@ const MOCK_PLANTS: UserPlant[] = [
     daysUntilWatering: 6,
     health: 'critical',
     notes: '葉が落ち始めた、要注意',
-    image: require('../../assets/images/roomAfterNordic.jpg'),
+    image: require('../../assets/images/room-after-natural.jpg'),
     careInstructions: '週1回の水やり、風通しの良い場所を好む',
   },
 ];
