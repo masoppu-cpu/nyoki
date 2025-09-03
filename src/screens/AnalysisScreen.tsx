@@ -13,6 +13,7 @@ const AnalysisScreen: React.FC<AnalysisScreenProps> = ({ onAnalysisComplete }) =
   const progressAnim = useRef(new Animated.Value(0)).current;
   const fadeAnim = useRef(new Animated.Value(0.5)).current;
   const scaleAnim = useRef(new Animated.Value(0.9)).current;
+  const bulbBounceAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     // 優しくフェードイン/アウトするアニメーション
@@ -62,7 +63,23 @@ const AnalysisScreen: React.FC<AnalysisScreenProps> = ({ onAnalysisComplete }) =
     setTimeout(() => setStatusText('レイアウトを最適化中...'), 12000);
 
     return () => clearInterval(interval);
-  }, [onAnalysisComplete, fadeAnim, scaleAnim]);
+    // 豆電球のバウンスアニメーション
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(bulbBounceAnim, {
+          toValue: -8,
+          duration: 400,
+          useNativeDriver: true,
+        }),
+        Animated.timing(bulbBounceAnim, {
+          toValue: 0,
+          duration: 400,
+          useNativeDriver: true,
+        }),
+        Animated.delay(1200),
+      ])
+    ).start();
+  }, [onAnalysisComplete, fadeAnim, scaleAnim, bulbBounceAnim]);
 
   useEffect(() => {
     Animated.timing(progressAnim, {
@@ -108,7 +125,16 @@ const AnalysisScreen: React.FC<AnalysisScreenProps> = ({ onAnalysisComplete }) =
         </View>
 
         <View style={styles.tips}>
-          <Text style={styles.tipTitle}>豆知識</Text>
+          <View style={styles.tipHeader}>
+            <Animated.View
+              style={{
+                transform: [{ translateY: bulbBounceAnim }],
+              }}
+            >
+              <Ionicons name="bulb-outline" size={20} color={COLORS.warning} />
+            </Animated.View>
+            <Text style={styles.tipTitle}>豆知識</Text>
+          </View>
           <Text style={styles.tipText}>
             観葉植物は空気を浄化し、{'\n'}
             ストレスを軽減する効果があります
@@ -176,11 +202,16 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     width: '100%',
   },
+  tipHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: SPACING.xs,
+    gap: 6,
+  },
   tipTitle: {
     fontSize: FONT_SIZE.sm,
     fontWeight: '600',
     color: COLORS.primary,
-    marginBottom: SPACING.xs,
   },
   tipText: {
     fontSize: FONT_SIZE.sm,
