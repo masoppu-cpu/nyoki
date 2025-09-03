@@ -26,6 +26,23 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ onNavigate }) => {
             AIがあなたの部屋に{'\n'}最適な植物を提案します
           </Text>
           
+          <View style={styles.steps}>
+            <View style={styles.stepItem}>
+              <Ionicons name="camera-outline" size={20} color="#FFFFFF" />
+              <Text style={styles.stepText}>1. 部屋を撮影</Text>
+            </View>
+            
+            <View style={styles.stepItem}>
+              <Ionicons name="sparkles-outline" size={20} color="#FFFFFF" />
+              <Text style={styles.stepText}>2. AIが分析</Text>
+            </View>
+            
+            <View style={styles.stepItem}>
+              <Ionicons name="leaf-outline" size={20} color="#FFFFFF" />
+              <Text style={styles.stepText}>3. 植物を提案</Text>
+            </View>
+          </View>
+          
           <TouchableOpacity 
             style={styles.button}
             onPress={() => onNavigate('capture')}
@@ -59,11 +76,29 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#FFFFFF',
     textAlign: 'center',
-    marginBottom: 40,
+    marginBottom: 30,
     textShadowColor: 'rgba(0, 0, 0, 0.75)',
     textShadowOffset: { width: 0, height: 2 },
     textShadowRadius: 4,
     lineHeight: 38,
+  },
+  steps: {
+    marginBottom: 40,
+  },
+  stepItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: 8,
+    paddingHorizontal: 20,
+  },
+  stepText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    marginLeft: 12,
+    fontWeight: '500',
+    textShadowColor: 'rgba(0, 0, 0, 0.5)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 2,
   },
   button: {
     flexDirection: 'row',
