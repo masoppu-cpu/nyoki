@@ -135,18 +135,19 @@ const MyPlantsScreen: React.FC = () => {
     Alert.alert('AI相談', 'AI相談機能は準備中です');
   };
 
-  const getHealthIcon = (health: string) => {
-    switch (health) {
-      case 'healthy':
-        return <Ionicons name="checkmark-circle" size={20} color={COLORS.success} />;
-      case 'warning':
-        return <Ionicons name="alert-circle" size={20} color={COLORS.warning} />;
-      case 'critical':
-        return <Ionicons name="close-circle" size={20} color={COLORS.error} />;
-      default:
-        return null;
-    }
-  };
+  // 健康状態のアイコンは削除（ごちゃついて見えるため）
+  // const getHealthIcon = (health: string) => {
+  //   switch (health) {
+  //     case 'healthy':
+  //       return <Ionicons name="checkmark-circle" size={20} color={COLORS.success} />;
+  //     case 'warning':
+  //       return <Ionicons name="alert-circle" size={20} color={COLORS.warning} />;
+  //     case 'critical':
+  //       return <Ionicons name="close-circle" size={20} color={COLORS.error} />;
+  //     default:
+  //       return null;
+  //   }
+  // };
 
   const getWateringStatus = (days: number) => {
     if (days === 0) {
@@ -192,12 +193,9 @@ const MyPlantsScreen: React.FC = () => {
                   >
                     <Image source={plant.image} style={styles.plantImage} />
                     <View style={styles.plantInfo}>
-                      <View style={styles.plantHeader}>
-                        <Text style={styles.plantName} numberOfLines={1}>
-                          {plant.nickname || plant.name}
-                        </Text>
-                        {getHealthIcon(plant.health)}
-                      </View>
+                      <Text style={styles.plantName} numberOfLines={1}>
+                        {plant.nickname || plant.name}
+                      </Text>
                       <Text style={styles.plantLocation}>{plant.location}</Text>
                       <View style={styles.wateringInfo}>
                         <Ionicons name="water-outline" size={16} color={waterStatus.color} />
@@ -213,12 +211,12 @@ const MyPlantsScreen: React.FC = () => {
                       >
                         {wateredPlants.has(plant.id) ? (
                           <>
-                            <Ionicons name="checkmark-circle" size={20} color={COLORS.success} />
+                            <Ionicons name="checkmark-circle" size={18} color={COLORS.success} />
                             <Text style={styles.actionButtonTextDone}>完了</Text>
                           </>
                         ) : (
                           <>
-                            <Ionicons name="water" size={20} color={COLORS.primary} />
+                            <Ionicons name="water" size={18} color={COLORS.primary} />
                             <Text style={styles.actionButtonText}>水やり</Text>
                           </>
                         )}
@@ -227,7 +225,7 @@ const MyPlantsScreen: React.FC = () => {
                         style={styles.actionButton}
                         onPress={(e) => handleQuickAIConsult(plant, e)}
                       >
-                        <Ionicons name="chatbubble-ellipses-outline" size={20} color={COLORS.secondary} />
+                        <Ionicons name="chatbubble-ellipses-outline" size={18} color={COLORS.secondary} />
                         <Text style={styles.actionButtonText}>AI相談</Text>
                       </TouchableOpacity>
                     </View>
@@ -260,12 +258,9 @@ const MyPlantsScreen: React.FC = () => {
               >
                 <Image source={plant.image} style={styles.plantImage} />
                 <View style={styles.plantInfo}>
-                  <View style={styles.plantHeader}>
-                    <Text style={styles.plantName} numberOfLines={1}>
-                      {plant.nickname || plant.name}
-                    </Text>
-                    {getHealthIcon(plant.health)}
-                  </View>
+                  <Text style={styles.plantName} numberOfLines={1}>
+                    {plant.nickname || plant.name}
+                  </Text>
                   <Text style={styles.plantLocation}>{plant.location}</Text>
                   <View style={styles.wateringInfo}>
                     <Ionicons name="water-outline" size={16} color={waterStatus.color} />
@@ -281,12 +276,12 @@ const MyPlantsScreen: React.FC = () => {
                   >
                     {wateredPlants.has(plant.id) ? (
                       <>
-                        <Ionicons name="checkmark-circle" size={20} color={COLORS.success} />
+                        <Ionicons name="checkmark-circle" size={18} color={COLORS.success} />
                         <Text style={styles.actionButtonTextDone}>完了</Text>
                       </>
                     ) : (
                       <>
-                        <Ionicons name="water" size={20} color={COLORS.primary} />
+                        <Ionicons name="water" size={18} color={COLORS.primary} />
                         <Text style={styles.actionButtonText}>水やり</Text>
                       </>
                     )}
@@ -295,7 +290,7 @@ const MyPlantsScreen: React.FC = () => {
                     style={styles.actionButton}
                     onPress={(e) => handleQuickAIConsult(plant, e)}
                   >
-                    <Ionicons name="chatbubble-ellipses-outline" size={20} color={COLORS.secondary} />
+                    <Ionicons name="chatbubble-ellipses-outline" size={18} color={COLORS.secondary} />
                     <Text style={styles.actionButtonText}>AI相談</Text>
                   </TouchableOpacity>
                 </View>
@@ -400,17 +395,12 @@ const styles = StyleSheet.create({
   },
   plantImage: {
     width: 100,
-    height: 100,
+    height: 120,
   },
   plantInfo: {
     flex: 1,
     padding: SPACING.md,
     justifyContent: 'space-between',
-  },
-  plantHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
   },
   plantName: {
     fontSize: FONT_SIZE.md,
@@ -447,22 +437,25 @@ const styles = StyleSheet.create({
     marginLeft: SPACING.sm,
   },
   actionButtons: {
-    flexDirection: 'row',
+    flexDirection: 'column',
     justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: SPACING.sm,
+    alignItems: 'stretch',
+    paddingRight: SPACING.sm,
+    paddingVertical: SPACING.sm,
     gap: SPACING.xs,
   },
   actionButton: {
+    flexDirection: 'row',
     paddingHorizontal: SPACING.sm,
-    paddingVertical: SPACING.xs + 2,
-    borderRadius: 16,
+    paddingVertical: SPACING.xs + 4,
+    borderRadius: 12,
     backgroundColor: COLORS.surface,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
     borderColor: COLORS.border,
-    minWidth: 60,
+    minWidth: 75,
+    gap: 4,
   },
   wateredButton: {
     backgroundColor: '#E8F5E9',
@@ -471,13 +464,11 @@ const styles = StyleSheet.create({
   actionButtonText: {
     fontSize: 11,
     color: COLORS.textSecondary,
-    marginTop: 2,
     fontWeight: '500',
   },
   actionButtonTextDone: {
     fontSize: 11,
     color: COLORS.success,
-    marginTop: 2,
     fontWeight: '600',
   },
 });
