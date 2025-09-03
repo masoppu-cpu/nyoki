@@ -17,7 +17,6 @@ import {
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { StatusBar } from 'expo-status-bar';
 import { COLORS, FONT_SIZE, SPACING } from '../config/constants';
-import BeforeAfterSlider from '../components/BeforeAfterSlider';
 import { Ionicons } from '@expo/vector-icons';
 
 const { width } = Dimensions.get('window');
@@ -33,6 +32,7 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onComplete }
   const [currentIndex, setCurrentIndex] = useState(0);
   const flatListRef = useRef<FlatList>(null);
   const [scrollEnabled, setScrollEnabled] = useState(true);
+  const [showBefore, setShowBefore] = useState(false);
 
   // Splash animation controls
   const [canTap, setCanTap] = useState(false);
@@ -291,9 +291,26 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onComplete }
             transform: [{ translateY: stepTy[2] }],
           }}
         >
-          <BeforeAfterSlider
-            beforeImage={roomBeforeImage}
-            afterImage={roomAfterImage}
+          <TouchableOpacity
+            activeOpacity={1}
+            onPressIn={() => setShowBefore(true)}
+            onPressOut={() => setShowBefore(false)}
+            style={styles.beforeAfterContainer}
+          >
+            <Image
+              source={showBefore ? roomBeforeImage : roomAfterImage}
+              style={styles.beforeAfterImage}
+              resizeMode="cover"
+            />
+            <View style={styles.beforeAfterOverlay}>
+              <Text style={styles.beforeAfterLabel}>
+                {showBefore ? 'Before' : 'After'}
+              </Text>
+              <Text style={styles.beforeAfterHint}>
+                タップしてBefore/Afterを確認
+              </Text>
+            </View>
+          </TouchableOpacity>
             initialPercent={0.5}
             autoAnimate={{ from: 1, to: 0.2, duration: 2000, delay: 600 }}
             onInteractionStart={() => setScrollEnabled(false)}
@@ -1278,6 +1295,39 @@ const styles = StyleSheet.create({
     color: COLORS.textOnBase,
     fontSize: 16,
     fontWeight: '600',
+  },
+  // Before/After styles
+  beforeAfterContainer: {
+    position: 'relative',
+    width: '100%',
+    aspectRatio: 4 / 3,
+    borderRadius: 12,
+    overflow: 'hidden',
+  },
+  beforeAfterImage: {
+    width: '100%',
+    height: '100%',
+  },
+  beforeAfterOverlay: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    alignItems: 'center',
+  },
+  beforeAfterLabel: {
+    color: 'white',
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 4,
+  },
+  beforeAfterHint: {
+    color: 'white',
+    fontSize: 14,
+    opacity: 0.9,
   },
 });
 
