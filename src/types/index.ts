@@ -3,6 +3,7 @@ export type AppView =
   | 'capture' 
   | 'generating' 
   | 'recommendations' 
+  | 'ar-preview'
   | 'my-plants' 
   | 'shop' 
   | 'purchase-list';

@@ -1,9 +1,22 @@
+import { Plant } from '../types';
+
 interface RoomAnalysisResult {
   lightLevel: 'low' | 'medium' | 'high';
   humidity: 'dry' | 'normal' | 'humid';
   temperature: 'cold' | 'normal' | 'warm';
   recommendedCategories: string[];
   suitablePlants: string[];
+}
+
+interface ARImageGenerationParams {
+  roomImage: string;
+  plants: Plant[];
+  style: 'natural' | 'modern' | 'minimal';
+  placementGuide: string;
+}
+
+interface ARImageResult {
+  imageUrl: string;
 }
 
 class AIService {
@@ -55,6 +68,33 @@ class AIService {
 
     // Mock identification result
     return 'モンステラ・デリシオサ';
+  }
+
+  async generateARImage(params: ARImageGenerationParams): Promise<ARImageResult> {
+    // Mock implementation
+    if (process.env.EXPO_PUBLIC_USE_MOCK === 'true' || true) {
+      await new Promise(resolve => setTimeout(resolve, 3000)); // 3秒待機
+      
+      // スタイルに応じたモック画像を返す
+      const mockImages = {
+        natural: require('../../assets/images/room-after-natural.jpg'),
+        modern: require('../../assets/images/room-after.jpg'),
+        minimal: require('../../assets/images/room-after-cool.jpg'),
+      };
+      
+      return {
+        imageUrl: mockImages[params.style] || mockImages.natural
+      };
+    }
+
+    // 実際のGemini API呼び出し（Phase 2で実装）
+    const response = await fetch('/api/generate-ar', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(params)
+    });
+    
+    return response.json();
   }
 }
 
