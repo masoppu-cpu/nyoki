@@ -78,18 +78,6 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ onNavigate }) => {
         </View>
       </View>
 
-      <View style={styles.showcase}>
-        <Text style={styles.sectionTitle}>Before & After</Text>
-        <Image 
-          source={require('../../assets/images/hero-room.jpg')}
-          style={styles.showcaseImage}
-          resizeMode="cover"
-        />
-        <Text style={styles.showcaseText}>
-          実際の部屋に植物を配置したイメージを{'\n'}事前に確認できます
-        </Text>
-      </View>
-
       <View style={styles.benefits}>
         <Text style={styles.sectionTitle}>nyokiの特徴</Text>
         
@@ -207,21 +195,6 @@ const styles = StyleSheet.create({
   featureDescription: {
     fontSize: FONT_SIZE.sm,
     color: COLORS.textSecondary,
-  },
-  showcase: {
-    padding: SPACING.lg,
-  },
-  showcaseImage: {
-    width: '100%',
-    height: 200,
-    borderRadius: BORDER_RADIUS.md,
-    marginBottom: SPACING.md,
-  },
-  showcaseText: {
-    fontSize: FONT_SIZE.md,
-    color: COLORS.textSecondary,
-    textAlign: 'center',
-    lineHeight: 22,
   },
   benefits: {
     padding: SPACING.lg,
