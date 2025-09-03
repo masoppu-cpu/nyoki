@@ -14,13 +14,13 @@ React Context APIを使用したグローバル状態管理の実装。認証、
 
 ## TODO リスト
 
-- [ ] AppContext作成
-- [ ] AuthContext実装
-- [ ] PurchaseListContext実装
-- [ ] PlantsContext実装
-- [ ] AsyncStorageでの永続化
-- [ ] Context統合
-- [ ] 購入検討リストの永続化（アプリ再起動後も保持）
+- [x] AppContext作成 ✅ 2025-09-03
+- [x] AuthContext実装 ✅ 2025-09-03（統合Context内で実装）
+- [x] PurchaseListContext実装 ✅ 2025-09-03（統合Context内で実装）
+- [x] PlantsContext実装 ✅ 2025-09-03（統合Context内で実装）
+- [x] AsyncStorageでの永続化 ✅ 2025-09-03
+- [x] Context統合 ✅ 2025-09-03（App.tsxにProvider統合）
+- [x] 購入検討リストの永続化（アプリ再起動後も保持） ✅ 2025-09-03
 - [ ] Expo Goでの動作確認
 
 ## 実装内容
@@ -403,12 +403,12 @@ npm start
 ```
 
 ## 完了条件
-- [ ] AppContext実装
-- [ ] 各種カスタムフック実装
-- [ ] AsyncStorage永続化
-- [ ] 購入検討リストの永続化（アプリ再起動後も保持）
-- [ ] 状態復元機能
-- [ ] エラーハンドリング
+- [x] AppContext実装 ✅ 2025-09-03
+- [x] 各種カスタムフック実装 ✅ 2025-09-03
+- [x] AsyncStorage永続化 ✅ 2025-09-03
+- [x] 購入検討リストの永続化（アプリ再起動後も保持） ✅ 2025-09-03
+- [x] 状態復元機能 ✅ 2025-09-03
+- [x] エラーハンドリング ✅ 2025-09-03
 - [ ] Expo Goでの動作確認完了
 
 ## 備考
