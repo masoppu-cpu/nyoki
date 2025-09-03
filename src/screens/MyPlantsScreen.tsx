@@ -90,9 +90,10 @@ const MOCK_PLANTS: UserPlant[] = [
 ];
 
 const MyPlantsScreen: React.FC = () => {
-  const [plants] = useState<UserPlant[]>(MOCK_PLANTS);
+  const [plants, setPlants] = useState<UserPlant[]>(MOCK_PLANTS);
   const [selectedPlant, setSelectedPlant] = useState<UserPlant | null>(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
+  const [wateredPlants, setWateredPlants] = useState<Set<string>>(new Set());
 
   // 水やりが必要な植物とそれ以外を分ける
   const plantsNeedingWater = plants.filter(p => p.daysUntilWatering === 0);
@@ -106,6 +107,28 @@ const MyPlantsScreen: React.FC = () => {
   const handleWaterComplete = () => {
     Alert.alert('水やり完了', `${selectedPlant?.nickname || selectedPlant?.name}の水やりを記録しました`);
     setShowDetailModal(false);
+  };
+
+  const handleQuickWater = (plant: UserPlant, e?: any) => {
+    e?.stopPropagation(); // カードのタップイベントを防ぐ
+    
+    setWateredPlants(prev => new Set([...prev, plant.id]));
+    
+    // 植物の水やり日を更新
+    setPlants(prevPlants => 
+      prevPlants.map(p => 
+        p.id === plant.id 
+          ? { ...p, lastWatered: new Date().toISOString().split('T')[0], daysUntilWatering: p.wateringInterval }
+          : p
+      )
+    );
+    
+    Alert.alert('水やり完了', `${plant.nickname || plant.name}の水やりを記録しました`);
+  };
+
+  const handleQuickAIConsult = (plant: UserPlant, e?: any) => {
+    e?.stopPropagation(); // カードのタップイベントを防ぐ
+    Alert.alert('AI相談', `${plant.nickname || plant.name}のAI相談画面へ移動します（実装準備中）`);
   };
 
   const handleAIConsult = () => {
@@ -183,6 +206,24 @@ const MyPlantsScreen: React.FC = () => {
                         </Text>
                       </View>
                     </View>
+                    <View style={styles.actionButtons}>
+                      <TouchableOpacity 
+                        style={[styles.actionButton, wateredPlants.has(plant.id) && styles.wateredButton]}
+                        onPress={(e) => handleQuickWater(plant, e)}
+                      >
+                        {wateredPlants.has(plant.id) ? (
+                          <Ionicons name="checkmark-circle" size={24} color={COLORS.success} />
+                        ) : (
+                          <Ionicons name="water" size={24} color={COLORS.primary} />
+                        )}
+                      </TouchableOpacity>
+                      <TouchableOpacity 
+                        style={styles.actionButton}
+                        onPress={(e) => handleQuickAIConsult(plant, e)}
+                      >
+                        <Ionicons name="chatbubble-ellipses-outline" size={24} color={COLORS.secondary} />
+                      </TouchableOpacity>
+                    </View>
                   </TouchableOpacity>
                 );
               })}
@@ -225,6 +266,24 @@ const MyPlantsScreen: React.FC = () => {
                       {waterStatus.text}
                     </Text>
                   </View>
+                </View>
+                <View style={styles.actionButtons}>
+                  <TouchableOpacity 
+                    style={[styles.actionButton, wateredPlants.has(plant.id) && styles.wateredButton]}
+                    onPress={(e) => handleQuickWater(plant, e)}
+                  >
+                    {wateredPlants.has(plant.id) ? (
+                      <Ionicons name="checkmark-circle" size={24} color={COLORS.success} />
+                    ) : (
+                      <Ionicons name="water" size={24} color={COLORS.primary} />
+                    )}
+                  </TouchableOpacity>
+                  <TouchableOpacity 
+                    style={styles.actionButton}
+                    onPress={(e) => handleQuickAIConsult(plant, e)}
+                  >
+                    <Ionicons name="chatbubble-ellipses-outline" size={24} color={COLORS.secondary} />
+                  </TouchableOpacity>
                 </View>
               </TouchableOpacity>
             );
@@ -372,6 +431,26 @@ const styles = StyleSheet.create({
     fontSize: FONT_SIZE.sm,
     color: COLORS.textSecondary,
     marginLeft: SPACING.sm,
+  },
+  actionButtons: {
+    flexDirection: 'column',
+    justifyContent: 'center',
+    paddingHorizontal: SPACING.sm,
+    gap: SPACING.xs,
+  },
+  actionButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: COLORS.surface,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: COLORS.border,
+  },
+  wateredButton: {
+    backgroundColor: '#E8F5E9',
+    borderColor: COLORS.success,
   },
 });
 
