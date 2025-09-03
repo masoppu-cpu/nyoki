@@ -1,5 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { View, Text, StyleSheet, Animated } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { COLORS, FONT_SIZE, SPACING } from '../config/constants';
 
 interface AnalysisScreenProps {
@@ -9,9 +10,37 @@ interface AnalysisScreenProps {
 const AnalysisScreen: React.FC<AnalysisScreenProps> = ({ onAnalysisComplete }) => {
   const [progress, setProgress] = useState(0);
   const [statusText, setStatusText] = useState('お部屋を分析中...');
-  const progressAnim = new Animated.Value(0);
+  const progressAnim = useRef(new Animated.Value(0)).current;
+  const rotateAnim = useRef(new Animated.Value(0)).current;
+  const scaleAnim = useRef(new Animated.Value(1)).current;
+  const pulseAnim = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
+    // 回転アニメーション
+    Animated.loop(
+      Animated.timing(rotateAnim, {
+        toValue: 1,
+        duration: 3000,
+        useNativeDriver: true,
+      })
+    ).start();
+
+    // パルスアニメーション
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(pulseAnim, {
+          toValue: 1.2,
+          duration: 1000,
+          useNativeDriver: true,
+        }),
+        Animated.timing(pulseAnim, {
+          toValue: 1,
+          duration: 1000,
+          useNativeDriver: true,
+        }),
+      ])
+    ).start();
+
     const interval = setInterval(() => {
       setProgress((prev) => {
         if (prev >= 100) {
@@ -29,7 +58,7 @@ const AnalysisScreen: React.FC<AnalysisScreenProps> = ({ onAnalysisComplete }) =
     setTimeout(() => setStatusText('レイアウトを最適化中...'), 12000);
 
     return () => clearInterval(interval);
-  }, [onAnalysisComplete]);
+  }, [onAnalysisComplete, rotateAnim, pulseAnim]);
 
   useEffect(() => {
     Animated.timing(progressAnim, {
@@ -37,16 +66,30 @@ const AnalysisScreen: React.FC<AnalysisScreenProps> = ({ onAnalysisComplete }) =
       duration: 500,
       useNativeDriver: false,
     }).start();
-  }, [progress]);
+  }, [progress, progressAnim]);
+
+  const spin = rotateAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: ['0deg', '360deg'],
+  });
 
   return (
     <View style={styles.container}>
       <View style={styles.content}>
         <View style={styles.animationContainer}>
-          <View style={styles.plantIcon}>
-            <Text style={styles.plantEmoji}>🌿</Text>
-          </View>
-          <View style={styles.circleAnimation} />
+          <Animated.View
+            style={[
+              styles.sparkleContainer,
+              {
+                transform: [
+                  { rotate: spin },
+                  { scale: pulseAnim }
+                ],
+              },
+            ]}
+          >
+            <Ionicons name="sparkles" size={60} color={COLORS.primary} />
+          </Animated.View>
         </View>
 
         <Text style={styles.title}>AI分析中</Text>
@@ -99,26 +142,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: SPACING.xl,
   },
-  plantIcon: {
+  sparkleContainer: {
     width: 80,
     height: 80,
-    borderRadius: 40,
-    backgroundColor: COLORS.primary,
     justifyContent: 'center',
     alignItems: 'center',
-    zIndex: 2,
-  },
-  plantEmoji: {
-    fontSize: 40,
-  },
-  circleAnimation: {
-    position: 'absolute',
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    borderWidth: 2,
-    borderColor: COLORS.primary,
-    opacity: 0.3,
   },
   title: {
     fontSize: FONT_SIZE.xxl,
