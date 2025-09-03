@@ -212,16 +212,23 @@ const MyPlantsScreen: React.FC = () => {
                         onPress={(e) => handleQuickWater(plant, e)}
                       >
                         {wateredPlants.has(plant.id) ? (
-                          <Ionicons name="checkmark-circle" size={24} color={COLORS.success} />
+                          <>
+                            <Ionicons name="checkmark-circle" size={20} color={COLORS.success} />
+                            <Text style={styles.actionButtonTextDone}>完了</Text>
+                          </>
                         ) : (
-                          <Ionicons name="water" size={24} color={COLORS.primary} />
+                          <>
+                            <Ionicons name="water" size={20} color={COLORS.primary} />
+                            <Text style={styles.actionButtonText}>水やり</Text>
+                          </>
                         )}
                       </TouchableOpacity>
                       <TouchableOpacity 
                         style={styles.actionButton}
                         onPress={(e) => handleQuickAIConsult(plant, e)}
                       >
-                        <Ionicons name="chatbubble-ellipses-outline" size={24} color={COLORS.secondary} />
+                        <Ionicons name="chatbubble-ellipses-outline" size={20} color={COLORS.secondary} />
+                        <Text style={styles.actionButtonText}>AI相談</Text>
                       </TouchableOpacity>
                     </View>
                   </TouchableOpacity>
@@ -273,16 +280,23 @@ const MyPlantsScreen: React.FC = () => {
                     onPress={(e) => handleQuickWater(plant, e)}
                   >
                     {wateredPlants.has(plant.id) ? (
-                      <Ionicons name="checkmark-circle" size={24} color={COLORS.success} />
+                      <>
+                        <Ionicons name="checkmark-circle" size={20} color={COLORS.success} />
+                        <Text style={styles.actionButtonTextDone}>完了</Text>
+                      </>
                     ) : (
-                      <Ionicons name="water" size={24} color={COLORS.primary} />
+                      <>
+                        <Ionicons name="water" size={20} color={COLORS.primary} />
+                        <Text style={styles.actionButtonText}>水やり</Text>
+                      </>
                     )}
                   </TouchableOpacity>
                   <TouchableOpacity 
                     style={styles.actionButton}
                     onPress={(e) => handleQuickAIConsult(plant, e)}
                   >
-                    <Ionicons name="chatbubble-ellipses-outline" size={24} color={COLORS.secondary} />
+                    <Ionicons name="chatbubble-ellipses-outline" size={20} color={COLORS.secondary} />
+                    <Text style={styles.actionButtonText}>AI相談</Text>
                   </TouchableOpacity>
                 </View>
               </TouchableOpacity>
@@ -433,24 +447,38 @@ const styles = StyleSheet.create({
     marginLeft: SPACING.sm,
   },
   actionButtons: {
-    flexDirection: 'column',
+    flexDirection: 'row',
     justifyContent: 'center',
+    alignItems: 'center',
     paddingHorizontal: SPACING.sm,
     gap: SPACING.xs,
   },
   actionButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    paddingHorizontal: SPACING.sm,
+    paddingVertical: SPACING.xs + 2,
+    borderRadius: 16,
     backgroundColor: COLORS.surface,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
     borderColor: COLORS.border,
+    minWidth: 60,
   },
   wateredButton: {
     backgroundColor: '#E8F5E9',
     borderColor: COLORS.success,
+  },
+  actionButtonText: {
+    fontSize: 11,
+    color: COLORS.textSecondary,
+    marginTop: 2,
+    fontWeight: '500',
+  },
+  actionButtonTextDone: {
+    fontSize: 11,
+    color: COLORS.success,
+    marginTop: 2,
+    fontWeight: '600',
   },
 });
 
