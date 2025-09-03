@@ -98,12 +98,18 @@ git switch -c feat/<TICKET-ID>-<short-desc>
 ✓ コード品質（重複・冗長性）
 ✓ 他チケットとの整合性
 ✓ lint/typecheck（利用可能な場合）
+✓ docs/common-issues/の既知問題チェック
 
 重複ファイル検出:
 - 類似コンポーネント名をチェック
 - 同一機能の複数実装を検出
 - 例: PlantList.tsx vs PlantsList.tsx
       useAuth.ts vs useAuthentication.ts
+
+🚨 よくあるミスの事前チェック:
+- docs/common-issues/配下のパターンを参照
+- 該当する問題がないか自動チェック
+- 修正提案を表示
 
 実行コマンド例:
 /serena "実装完了後のコードレビュー" -c
@@ -118,17 +124,23 @@ git switch -c feat/<TICKET-ID>-<short-desc>
    - 似た名前のコンポーネント
    - 不要なテスト/一時ファイル
 
-2. チケットTODO更新
+2. よくあるミスの最終チェック
+   - docs/common-issues/全ファイルを参照
+   - 実装内容との照合
+   - 該当する問題の修正確認
+
+3. チケットTODO更新
    - docs/<ticket-id>_*.mdのチェックボックス
    - 完了項目に✅を付与
    - 関連チケットの状態更新
 
-3. ドキュメント同期
+4. ドキュメント同期
    - CLAUDE.md の更新（必要時）
    - docs/HUMAN_TODO.md の更新
+   - docs/common-issues/への新規パターン追加（必要時）
    - README.md の整合性
 
-4. コードベース整頓
+5. コードベース整頓
    - 未使用importの削除
    - console.logの削除
    - コメントアウトコードの削除
@@ -138,6 +150,7 @@ git switch -c feat/<TICKET-ID>-<short-desc>
 - git status --ignored
 - find . -name "*.tmp" -o -name "*~"
 - grep -r "console.log" src/
+- ls docs/common-issues/*.md  # 既知問題の確認
 ```
 
 ### 7. PR作成（/serena で実行）
@@ -280,11 +293,14 @@ npx knip --no-exit-code 2>/dev/null || true
 2. **Serena MCP活用**: 
    - `/serena -d`: 事前調査と実装（深層モード）
    - `/serena -c`: コードレビューと最適化
-3. **Supabase MCP**: スキーマ確認（利用可能時）
-4. **整合性チェック**: 重複ファイル・不要コード削除
-5. **ドキュメント同期**: TODO更新・CLAUDE.md確認
-6. **自動セルフレビュー**: 品質・セキュリティ確認
-7. **PR自動生成**: テンプレート準拠
+3. **よくあるミスチェック**:
+   - docs/common-issues/配下の全パターンを参照
+   - 実装前・実装後・PR前の3段階でチェック
+4. **Supabase MCP**: スキーマ確認（利用可能時）
+5. **整合性チェック**: 重複ファイル・不要コード削除
+6. **ドキュメント同期**: TODO更新・CLAUDE.md確認
+7. **自動セルフレビュー**: 品質・セキュリティ確認
+8. **PR自動生成**: テンプレート準拠
 
 ## 整理・整頓の自動化
 

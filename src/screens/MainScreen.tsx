@@ -10,6 +10,8 @@ import PlantSelectionScreen from './PlantSelectionScreen';
 import PurchaseListScreen from './PurchaseListScreen';
 import ARPreviewScreen from './ARPreviewScreen';
 import RecommendationScreen from './RecommendationScreen';
+import CameraScreen from './CameraScreen';
+import AnalysisScreen from './AnalysisScreen';
 
 const MainScreen: React.FC = () => {
   const [selectedTab, setSelectedTab] = useState(0);
@@ -32,8 +34,10 @@ const MainScreen: React.FC = () => {
   const handleNavigate = (screen: string, data?: any) => {
     switch (screen) {
       case 'capture':
-        // TODO: カメラ画面への遷移実装
-        console.log('Navigate to camera screen');
+        setCurrentView('camera');
+        break;
+      case 'analysis':
+        setCurrentView('analysis');
         break;
       case 'recommendations':
         if (data?.recommendedPlants) {
@@ -83,6 +87,35 @@ const MainScreen: React.FC = () => {
     switch (currentView) {
       case 'home':
         return <HomeScreen onNavigate={handleNavigate} />;
+      case 'camera':
+        return (
+          <CameraScreen
+            onImageCaptured={(imageUri) => {
+              // カメラ撮影後、分析画面へ遷移
+              handleNavigate('analysis');
+              // 3秒後に推奨画面へ（デモ用）
+              setTimeout(() => {
+                handleNavigate('recommendations', {
+                  recommendedPlants: [
+                    { id: '1', name: 'モンステラ', price: 3980, size: 'M', difficulty: '初心者向け', light: '明るい日陰', water: '週1回', description: '人気の観葉植物', image: require('../../assets/images/plants/plants_Monstera.jpeg'), category: 'natural' },
+                    { id: '2', name: 'ゴムの木', price: 2980, size: 'L', difficulty: '初心者向け', light: '明るい日陰', water: '週1回', description: '育てやすい植物', image: require('../../assets/images/plants/plants_RubberPlant.jpeg'), category: 'modern' },
+                    { id: '3', name: 'ポトス', price: 1980, size: 'S', difficulty: '初心者向け', light: '日陰OK', water: '週1-2回', description: 'つる性の植物', image: require('../../assets/images/plants/plants_GoldenPothos.jpeg'), category: 'natural' }
+                  ],
+                  roomImage: imageUri
+                });
+              }, 3000);
+            }}
+            onBack={() => setCurrentView('home')}
+          />
+        );
+      case 'analysis':
+        return (
+          <AnalysisScreen
+            onComplete={() => {
+              // 分析完了後の処理（自動遷移されるので特に何もしない）
+            }}
+          />
+        );
       case 'my-plants':
         return <MyPlantsScreen />;
       case 'recommendations':
