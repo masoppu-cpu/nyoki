@@ -97,7 +97,7 @@ const MainScreen: React.FC = () => {
               setTimeout(() => {
                 handleNavigate('recommendations', {
                   recommendedPlants: [
-                    { id: '1', name: 'モンステラ', price: 3980, size: 'M', difficulty: '初心者向け', light: '明るい日陰', water: '週1回', description: '人気の観葉植物', image: require('../../assets/images/plants/plants_Monstera.jpeg'), category: 'natural' },
+                    { id: '1', name: 'モンステラ', price: 3980, size: 'M', difficulty: '初心者向け', light: '明るい日陰', water: '週1回', description: '人気の観葉植物', image: require('../../assets/images/plants/plants_Monstera deliciosa .jpeg'), category: 'natural' },
                     { id: '2', name: 'ゴムの木', price: 2980, size: 'L', difficulty: '初心者向け', light: '明るい日陰', water: '週1回', description: '育てやすい植物', image: require('../../assets/images/plants/plants_RubberPlant.jpeg'), category: 'modern' },
                     { id: '3', name: 'ポトス', price: 1980, size: 'S', difficulty: '初心者向け', light: '日陰OK', water: '週1-2回', description: 'つる性の植物', image: require('../../assets/images/plants/plants_GoldenPothos.jpeg'), category: 'natural' }
                   ],
