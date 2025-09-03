@@ -13,7 +13,7 @@ interface HomeScreenProps {
 const HomeScreen: React.FC<HomeScreenProps> = ({ onNavigate }) => {
   return (
     <ImageBackground
-      source={require('../../assets/images/onbording/homeimage-optimized.jpg')}
+      source={require('../../assets/images/onbording/homeImage-optimized.jpg')}
       style={styles.container}
       resizeMode="cover"
     >
