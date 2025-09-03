@@ -10,7 +10,6 @@ interface RecommendationScreenProps {
   onAddToPurchaseList: (plant: Plant) => void;
   onBack: () => void;
   onNavigateToShop: () => void;
-  onNavigateToARPreview?: (data: { roomImage: string; selectedPlants: Plant[] }) => void;
 }
 
 const RecommendationScreen: React.FC<RecommendationScreenProps> = ({
@@ -18,7 +17,6 @@ const RecommendationScreen: React.FC<RecommendationScreenProps> = ({
   onAddToPurchaseList,
   onBack,
   onNavigateToShop,
-  onNavigateToARPreview,
 }) => {
   const [selectedStyle, setSelectedStyle] = useState<'natural' | 'modern' | 'cozy'>('natural');
   const [showBefore, setShowBefore] = useState(false);
@@ -130,19 +128,6 @@ const RecommendationScreen: React.FC<RecommendationScreenProps> = ({
           ))}
         </View>
 
-        {onNavigateToARPreview && recommendedPlants.length > 0 && (
-          <TouchableOpacity 
-            style={styles.arPreviewButton} 
-            onPress={() => onNavigateToARPreview!({
-              roomImage: require('../../assets/images/room-before.jpg'),
-              selectedPlants: recommendedPlants.slice(0, 3) // 最初の3つの植物を選択
-            })}
-          >
-            <Ionicons name="eye-outline" size={24} color={COLORS.background} />
-            <Text style={styles.arPreviewButtonText}>AR配置プレビューを見る</Text>
-          </TouchableOpacity>
-        )}
-
         <TouchableOpacity style={styles.moreButton} onPress={onNavigateToShop}>
           <Text style={styles.moreButtonText}>もっと植物を見る</Text>
           <Ionicons name="arrow-forward" size={20} color={COLORS.primary} />
@@ -248,31 +233,6 @@ const styles = StyleSheet.create({
   },
   plantsSection: {
     padding: SPACING.lg,
-  },
-  arPreviewButton: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: COLORS.primary,
-    marginHorizontal: SPACING.lg,
-    paddingVertical: SPACING.md,
-    paddingHorizontal: SPACING.lg,
-    borderRadius: BORDER_RADIUS.md,
-    marginBottom: SPACING.sm,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-    elevation: 5,
-  },
-  arPreviewButtonText: {
-    fontSize: FONT_SIZE.md,
-    color: COLORS.background,
-    fontWeight: '600',
-    marginLeft: SPACING.sm,
   },
   moreButton: {
     flexDirection: 'row',
