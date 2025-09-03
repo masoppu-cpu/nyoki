@@ -11,33 +11,37 @@ const AnalysisScreen: React.FC<AnalysisScreenProps> = ({ onAnalysisComplete }) =
   const [progress, setProgress] = useState(0);
   const [statusText, setStatusText] = useState('お部屋を分析中...');
   const progressAnim = useRef(new Animated.Value(0)).current;
-  const rotateAnim = useRef(new Animated.Value(0)).current;
-  const scaleAnim = useRef(new Animated.Value(1)).current;
-  const pulseAnim = useRef(new Animated.Value(1)).current;
+  const fadeAnim = useRef(new Animated.Value(0.5)).current;
+  const scaleAnim = useRef(new Animated.Value(0.9)).current;
 
   useEffect(() => {
-    // 回転アニメーション
+    // 優しくフェードイン/アウトするアニメーション
     Animated.loop(
-      Animated.timing(rotateAnim, {
-        toValue: 1,
-        duration: 3000,
-        useNativeDriver: true,
-      })
-    ).start();
-
-    // パルスアニメーション
-    Animated.loop(
-      Animated.sequence([
-        Animated.timing(pulseAnim, {
-          toValue: 1.2,
-          duration: 1000,
-          useNativeDriver: true,
-        }),
-        Animated.timing(pulseAnim, {
-          toValue: 1,
-          duration: 1000,
-          useNativeDriver: true,
-        }),
+      Animated.parallel([
+        Animated.sequence([
+          Animated.timing(fadeAnim, {
+            toValue: 1,
+            duration: 1500,
+            useNativeDriver: true,
+          }),
+          Animated.timing(fadeAnim, {
+            toValue: 0.5,
+            duration: 1500,
+            useNativeDriver: true,
+          }),
+        ]),
+        Animated.sequence([
+          Animated.timing(scaleAnim, {
+            toValue: 1.1,
+            duration: 1500,
+            useNativeDriver: true,
+          }),
+          Animated.timing(scaleAnim, {
+            toValue: 0.9,
+            duration: 1500,
+            useNativeDriver: true,
+          }),
+        ]),
       ])
     ).start();
 
@@ -58,7 +62,7 @@ const AnalysisScreen: React.FC<AnalysisScreenProps> = ({ onAnalysisComplete }) =
     setTimeout(() => setStatusText('レイアウトを最適化中...'), 12000);
 
     return () => clearInterval(interval);
-  }, [onAnalysisComplete, rotateAnim, pulseAnim]);
+  }, [onAnalysisComplete, fadeAnim, scaleAnim]);
 
   useEffect(() => {
     Animated.timing(progressAnim, {
@@ -68,27 +72,18 @@ const AnalysisScreen: React.FC<AnalysisScreenProps> = ({ onAnalysisComplete }) =
     }).start();
   }, [progress, progressAnim]);
 
-  const spin = rotateAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: ['0deg', '360deg'],
-  });
 
   return (
     <View style={styles.container}>
       <View style={styles.content}>
         <View style={styles.animationContainer}>
           <Animated.View
-            style={[
-              styles.sparkleContainer,
-              {
-                transform: [
-                  { rotate: spin },
-                  { scale: pulseAnim }
-                ],
-              },
-            ]}
+            style={{
+              opacity: fadeAnim,
+              transform: [{ scale: scaleAnim }],
+            }}
           >
-            <Ionicons name="sparkles" size={60} color={COLORS.primary} />
+            <Ionicons name="leaf-outline" size={56} color={COLORS.primary} />
           </Animated.View>
         </View>
 
@@ -141,12 +136,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: SPACING.xl,
-  },
-  sparkleContainer: {
-    width: 80,
-    height: 80,
-    justifyContent: 'center',
-    alignItems: 'center',
   },
   title: {
     fontSize: FONT_SIZE.xxl,
