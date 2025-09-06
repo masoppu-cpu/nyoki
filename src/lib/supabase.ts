@@ -8,13 +8,13 @@ import { createClient } from '@supabase/supabase-js';
 import { Database } from '../types/database';
 
 // 環境変数から取得
-const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL;
-const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY;
+const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL!;
+const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY!;
 
 if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error(
-    'Supabase環境変数が設定されていません。.envファイルを確認してください。'
-  );
+  console.error('Supabase環境変数が設定されていません');
+  console.log('SUPABASE_URL:', supabaseUrl ? 'Set' : 'Not Set');
+  console.log('SUPABASE_ANON_KEY:', supabaseAnonKey ? 'Set' : 'Not Set');
 }
 
 // Supabaseクライアントを作成
